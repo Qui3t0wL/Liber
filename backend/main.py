@@ -17,7 +17,7 @@ app = FastAPI(title="Registos Paroquiais API")
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
-    allow_methods=["GET"],
+    allow_methods=["GET", "POST", "DELETE"],
     allow_headers=["*"],
 )
 
@@ -115,6 +115,23 @@ async def confirmar_upload(
     resultado = importer.validar_e_importar(conteudo, tipo, ficheiro.filename, dry_run=False)
     return resultado
 
+@app.delete("/admin/api/reset-db")
+def reset_db(request: Request, confirmar: str = Query(...), _=Depends(verificar_ip_local)):
+    if confirmar != "CONFIRMAR":
+        raise HTTPException(status_code=400, detail="Passa o parâmetro confirmar=CONFIRMAR para prosseguir.")
+    
+    conn = db._conn()
+    cur = conn.cursor()
+    cur.execute("DELETE FROM batismos")
+    cur.execute("DELETE FROM casamentos")
+    cur.execute("DELETE FROM obitos")
+    cur.execute("DELETE FROM uploads")
+    cur.execute("DELETE FROM sqlite_sequence WHERE name IN ('batismos','casamentos','obitos','uploads')")
+    conn.commit()
+    conn.close()
+    
+    return {"sucesso": True, "mensagem": "Base de dados limpa. Todos os registos e histórico de uploads foram apagados."}
+
 @app.get("/api/pesquisar-ia")
 async def pesquisar_ia(
     q: str = Query(..., description="Pesquisa em linguagem natural"),
@@ -155,11 +172,13 @@ Omite campos não mencionados. Devolve apenas o JSON.""",
         )
 
         filtros = json.loads(resposta.content[0].text)
+        usou_ia = True
 
-    except json.JSONDecodeError:
-        raise HTTPException(status_code=422, detail="Não foi possível interpretar a pesquisa.")
-    except Exception as e:
-        raise HTTPException(status_code=503, detail=f"Erro na IA: {str(e)}")
+    except Exception:
+        # Fallback para interpretação por padrões
+        from parser import interpretar_query
+        filtros = interpretar_query(q)
+        usou_ia = False
 
     # Construir termo de pesquisa combinando campos de nome
     termos = [filtros.get(c) for c in ("nome","pai","mae","noivo","noiva","testemunha") if filtros.get(c)]
@@ -182,6 +201,7 @@ Omite campos não mencionados. Devolve apenas o JSON.""",
         "paginas": (total + por_pagina - 1) // por_pagina,
         "resultados": resultados,
         "interpretacao": filtros,  # mostra ao utilizador o que foi interpretado
+        "usou_ia": usou_ia,
     }
 # ── Servir frontends estáticos ────────────────────────────────────────────────
 
