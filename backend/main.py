@@ -5,6 +5,8 @@ from fastapi.responses import JSONResponse, HTMLResponse, FileResponse
 from typing import Optional
 import uvicorn
 import os
+import anthropic
+import json
 
 from database import Database
 from importer import ExcelImporter
@@ -113,6 +115,74 @@ async def confirmar_upload(
     resultado = importer.validar_e_importar(conteudo, tipo, ficheiro.filename, dry_run=False)
     return resultado
 
+@app.get("/api/pesquisar-ia")
+async def pesquisar_ia(
+    q: str = Query(..., description="Pesquisa em linguagem natural"),
+    pagina: int = Query(1, ge=1),
+    por_pagina: int = Query(25, ge=1, le=100),
+):
+    api_key = os.environ.get("ANTHROPIC_API_KEY")
+    if not api_key:
+        raise HTTPException(status_code=503, detail="API de IA não configurada.")
+
+    try:
+        client = anthropic.Anthropic(api_key=api_key)
+        resposta = client.messages.create(
+            model="claude-haiku-4-5-20251001",
+            max_tokens=300,
+            system="""Interpreta pesquisas genealógicas em português e devolve APENAS JSON válido,
+sem texto adicional, com os seguintes campos opcionais:
+- nome: nome da pessoa principal
+- pai: nome do pai
+- mae: nome da mãe
+- noivo: nome do noivo (casamentos)
+- noiva: nome da noiva (casamentos)
+- testemunha: nome de testemunha
+- local: localidade
+- fonte: referência de arquivo
+- ano_min: ano mínimo (inteiro)
+- ano_max: ano máximo (inteiro)
+- tipo: "batismo", "casamento" ou "obito"
+
+Exemplos:
+"joão filho de pedro" → {"nome":"joão","pai":"pedro"}
+"casamentos da família silva em 1823" → {"tipo":"casamento","nome":"silva","ano_min":1823,"ano_max":1823}
+"óbitos no século XIX em aldeia do meio" → {"tipo":"obito","ano_min":1800,"ano_max":1899,"local":"aldeia do meio"}
+"manuel casado com ana ferreira" → {"tipo":"casamento","noivo":"manuel","noiva":"ana ferreira"}
+
+Omite campos não mencionados. Devolve apenas o JSON.""",
+            messages=[{"role": "user", "content": q}]
+        )
+
+        filtros = json.loads(resposta.content[0].text)
+
+    except json.JSONDecodeError:
+        raise HTTPException(status_code=422, detail="Não foi possível interpretar a pesquisa.")
+    except Exception as e:
+        raise HTTPException(status_code=503, detail=f"Erro na IA: {str(e)}")
+
+    # Construir termo de pesquisa combinando campos de nome
+    termos = [filtros.get(c) for c in ("nome","pai","mae","noivo","noiva","testemunha") if filtros.get(c)]
+    q_combinado = " ".join(termos) if termos else None
+
+    resultados, total = db.pesquisar(
+        q=q_combinado,
+        tipo=filtros.get("tipo"),
+        ano_min=filtros.get("ano_min"),
+        ano_max=filtros.get("ano_max"),
+        fonte=filtros.get("fonte"),
+        pagina=pagina,
+        por_pagina=por_pagina,
+    )
+
+    return {
+        "total": total,
+        "pagina": pagina,
+        "por_pagina": por_pagina,
+        "paginas": (total + por_pagina - 1) // por_pagina,
+        "resultados": resultados,
+        "interpretacao": filtros,  # mostra ao utilizador o que foi interpretado
+    }
 # ── Servir frontends estáticos ────────────────────────────────────────────────
 
 app.mount("/static", StaticFiles(directory="frontend/public"), name="public")
