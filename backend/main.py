@@ -115,17 +115,17 @@ async def confirmar_upload(
 
 # ── Servir frontends estáticos ────────────────────────────────────────────────
 
-app.mount("/static", StaticFiles(directory="../frontend/public"), name="public")
+app.mount("/static", StaticFiles(directory="frontend/public"), name="public")
 
 @app.get("/", response_class=HTMLResponse)
 def index():
-    return FileResponse("../frontend/public/index.html")
+    return FileResponse("frontend/public/index.html")
 
 @app.get("/admin", response_class=HTMLResponse)
 def admin(request: Request, _=Depends(verificar_ip_local)):
-    return FileResponse("../frontend/admin/index.html")
+    return FileResponse("frontend/admin/index.html")
 
-app.mount("/admin/static", StaticFiles(directory="../frontend/admin"), name="admin")
+app.mount("/admin/static", StaticFiles(directory="frontend/admin"), name="admin")
 
 if __name__ == "__main__":
     db.criar_tabelas()
