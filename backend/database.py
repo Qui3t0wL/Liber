@@ -255,22 +255,31 @@ class Database:
     def inserir_batismos(self, registos: List[dict], upload_id: int):
         conn = self._conn()
         cur = conn.cursor()
+        campos = ['fonte','fls','ano','nr_ordem','nome','data_nasc',
+                  'local_nascimento','pai','mae','avo_paterno','avo_paterna',
+                  'avo_materno','avo_materna','notas']
         cur.executemany("""
             INSERT INTO batismos
             (upload_id, fonte, fls, ano, nr_ordem, nome, data_nasc,
              local_nascimento, pai, mae, avo_paterno, avo_paterna,
              avo_materno, avo_materna, notas)
             VALUES
-            (:upload_id, :fonte, :fls, :ano, :nr_ordem, :nome, :data_nasc,
-             :local_nascimento, :pai, :mae, :avo_paterno, :avo_paterna,
-             :avo_materno, :avo_materna, :notas)
-        """, [{**r, "upload_id": upload_id} for r in registos])
+            (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        """, [
+            (upload_id, *[r.get(c) for c in campos])
+            for r in registos
+        ])
         conn.commit()
         conn.close()
-
+    
     def inserir_casamentos(self, registos: List[dict], upload_id: int):
         conn = self._conn()
         cur = conn.cursor()
+        campos = ['fonte','fls','ano','nr_ordem','data','noivo',
+                  'idade_dnasc_noivo','nat_noivo','noiva','idade_dnasc_noiva','nat_noiva',
+                  'local','pai_noivo','nat_pai_noivo','mae_noivo','nat_mae_noivo',
+                  'pai_noiva','nat_pai_noiva','mae_noiva','nat_mae_noiva',
+                  'testemunha1','testemunha2','notas']
         cur.executemany("""
             INSERT INTO casamentos
             (upload_id, fonte, fls, ano, nr_ordem, data, noivo,
@@ -279,26 +288,28 @@ class Database:
              pai_noiva, nat_pai_noiva, mae_noiva, nat_mae_noiva,
              testemunha1, testemunha2, notas)
             VALUES
-            (:upload_id, :fonte, :fls, :ano, :nr_ordem, :data, :noivo,
-             :idade_dnasc_noivo, :nat_noivo, :noiva, :idade_dnasc_noiva, :nat_noiva,
-             :local, :pai_noivo, :nat_pai_noivo, :mae_noivo, :nat_mae_noivo,
-             :pai_noiva, :nat_pai_noiva, :mae_noiva, :nat_mae_noiva,
-             :testemunha1, :testemunha2, :notas)
-        """, [{**r, "upload_id": upload_id} for r in registos])
+            (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        """, [
+            (upload_id, *[r.get(c) for c in campos])
+            for r in registos
+        ])
         conn.commit()
         conn.close()
 
     def inserir_obitos(self, registos: List[dict], upload_id: int):
         conn = self._conn()
         cur = conn.cursor()
+        campos = ['fonte','fls','ano','nr_ordem','nome','data_obito','local','pai','mae','notas']
         cur.executemany("""
             INSERT INTO obitos
             (upload_id, fonte, fls, ano, nr_ordem, nome, data_obito,
              local, pai, mae, notas)
             VALUES
-            (:upload_id, :fonte, :fls, :ano, :nr_ordem, :nome, :data_obito,
-             :local, :pai, :mae, :notas)
-        """, [{**r, "upload_id": upload_id} for r in registos])
+            (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        """, [
+            (upload_id, *[r.get(c) for c in campos])
+            for r in registos
+        ])
         conn.commit()
         conn.close()
 
