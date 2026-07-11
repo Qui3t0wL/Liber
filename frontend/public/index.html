@@ -1,0 +1,698 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Registos Paroquiais</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;0,600;1,400&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --sépia:        #f5f0e8;
+    --sépia-escura: #e8dfc8;
+    --tinta:        #1c1814;
+    --tinta-suave:  #4a4035;
+    --tinta-clara:  #8a7a68;
+    --ouro:         #8b6914;
+    --ouro-claro:   #c49a2a;
+    --linha:        #d4c8b0;
+    --batismo:      #1a4a6b;
+    --casamento:    #5a2d6b;
+    --obito:        #4a1a1a;
+    --fundo-card:   #fdfaf4;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--sépia);
+    color: var(--tinta);
+    font-family: 'Inter', sans-serif;
+    font-size: 15px;
+    font-weight: 300;
+    min-height: 100vh;
+  }
+
+  /* ── Cabeçalho ── */
+  header {
+    background: var(--tinta);
+    color: var(--sépia);
+    padding: 2.5rem 2rem 2rem;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+  header::after {
+    content: '';
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, transparent, var(--ouro-claro), transparent);
+  }
+  .titulo-latim {
+    font-family: 'EB Garamond', serif;
+    font-style: italic;
+    font-size: 0.85rem;
+    color: var(--ouro-claro);
+    letter-spacing: 0.15em;
+    margin-bottom: 0.5rem;
+    opacity: 0.85;
+  }
+  h1 {
+    font-family: 'EB Garamond', serif;
+    font-size: 2.4rem;
+    font-weight: 500;
+    letter-spacing: 0.02em;
+    line-height: 1.1;
+  }
+  .subtitulo {
+    margin-top: 0.4rem;
+    font-size: 0.8rem;
+    font-weight: 300;
+    color: var(--sépia-escura);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  /* ── Estatísticas ── */
+  .stats-bar {
+    display: flex;
+    justify-content: center;
+    gap: 3rem;
+    padding: 1rem 2rem;
+    background: var(--tinta-suave);
+    color: var(--sépia);
+  }
+  .stat { text-align: center; }
+  .stat-valor {
+    font-family: 'EB Garamond', serif;
+    font-size: 1.5rem;
+    font-weight: 500;
+    color: var(--ouro-claro);
+  }
+  .stat-label {
+    font-size: 0.7rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    opacity: 0.75;
+  }
+
+  /* ── Pesquisa ── */
+  main { max-width: 1000px; margin: 0 auto; padding: 2rem 1.5rem 4rem; }
+
+  .painel-pesquisa {
+    background: var(--fundo-card);
+    border: 1px solid var(--linha);
+    border-radius: 2px;
+    padding: 1.5rem;
+    margin-bottom: 2rem;
+    box-shadow: 0 2px 12px rgba(28,24,20,0.06);
+  }
+
+  .campo-principal {
+    display: flex;
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+  }
+  .campo-principal input {
+    flex: 1;
+    padding: 0.75rem 1rem;
+    font-family: 'EB Garamond', serif;
+    font-size: 1.1rem;
+    border: 1.5px solid var(--linha);
+    background: var(--sépia);
+    color: var(--tinta);
+    border-radius: 2px;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+  .campo-principal input:focus { border-color: var(--ouro); }
+  .campo-principal input::placeholder { color: var(--tinta-clara); font-style: italic; }
+
+  .btn-pesquisar {
+    padding: 0.75rem 1.5rem;
+    background: var(--tinta);
+    color: var(--sépia);
+    border: none;
+    font-size: 0.85rem;
+    font-weight: 400;
+    letter-spacing: 0.05em;
+    cursor: pointer;
+    border-radius: 2px;
+    transition: background 0.2s;
+    white-space: nowrap;
+  }
+  .btn-pesquisar:hover { background: var(--ouro); }
+
+  .filtros {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    align-items: flex-end;
+  }
+  .filtro-grupo { display: flex; flex-direction: column; gap: 0.3rem; }
+  .filtro-grupo label {
+    font-size: 0.7rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--tinta-clara);
+  }
+  .filtro-grupo select,
+  .filtro-grupo input {
+    padding: 0.45rem 0.7rem;
+    border: 1px solid var(--linha);
+    background: var(--sépia);
+    color: var(--tinta);
+    font-size: 0.85rem;
+    border-radius: 2px;
+    outline: none;
+    cursor: pointer;
+  }
+  .filtro-grupo select:focus,
+  .filtro-grupo input:focus { border-color: var(--ouro); }
+  .filtro-anos { display: flex; gap: 0.4rem; align-items: center; }
+  .filtro-anos span { color: var(--tinta-clara); font-size: 0.8rem; }
+  .filtro-anos input { width: 5.5rem; }
+
+  .btn-limpar {
+    padding: 0.45rem 0.9rem;
+    background: none;
+    border: 1px solid var(--linha);
+    color: var(--tinta-clara);
+    font-size: 0.8rem;
+    cursor: pointer;
+    border-radius: 2px;
+    margin-top: 1.3rem;
+    transition: all 0.2s;
+  }
+  .btn-limpar:hover { border-color: var(--tinta-clara); color: var(--tinta); }
+
+  /* ── Resultados ── */
+  .info-resultados {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+    color: var(--tinta-clara);
+    font-size: 0.85rem;
+  }
+
+  .lista-resultados { display: flex; flex-direction: column; gap: 0.5rem; }
+
+  .card {
+    background: var(--fundo-card);
+    border: 1px solid var(--linha);
+    border-left: 3px solid var(--linha);
+    border-radius: 2px;
+    padding: 1rem 1.2rem;
+    cursor: pointer;
+    transition: all 0.15s;
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    gap: 0.5rem 1rem;
+    align-items: start;
+  }
+  .card:hover {
+    border-left-color: var(--ouro);
+    box-shadow: 0 2px 8px rgba(28,24,20,0.08);
+    transform: translateX(2px);
+  }
+  .card[data-tipo="batismo"] { border-left-color: var(--batismo); }
+  .card[data-tipo="casamento"] { border-left-color: var(--casamento); }
+  .card[data-tipo="obito"] { border-left-color: var(--obito); }
+
+  .badge {
+    font-size: 0.65rem;
+    font-weight: 500;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    padding: 0.2rem 0.5rem;
+    border-radius: 1px;
+    white-space: nowrap;
+    margin-top: 0.1rem;
+  }
+  .badge-batismo  { background: #dce8f0; color: var(--batismo); }
+  .badge-casamento { background: #ecdcf0; color: var(--casamento); }
+  .badge-obito    { background: #f0dcdc; color: var(--obito); }
+
+  .card-nome {
+    font-family: 'EB Garamond', serif;
+    font-size: 1.15rem;
+    font-weight: 500;
+    line-height: 1.2;
+  }
+  .card-detalhe {
+    font-size: 0.8rem;
+    color: var(--tinta-clara);
+    margin-top: 0.2rem;
+  }
+  .card-ano {
+    font-family: 'EB Garamond', serif;
+    font-size: 1.1rem;
+    color: var(--ouro);
+    text-align: right;
+    white-space: nowrap;
+  }
+
+  /* ── Paginação ── */
+  .paginacao {
+    display: flex;
+    justify-content: center;
+    gap: 0.4rem;
+    margin-top: 2rem;
+  }
+  .btn-pag {
+    padding: 0.4rem 0.8rem;
+    border: 1px solid var(--linha);
+    background: var(--fundo-card);
+    color: var(--tinta);
+    cursor: pointer;
+    font-size: 0.85rem;
+    border-radius: 2px;
+    transition: all 0.15s;
+  }
+  .btn-pag:hover { border-color: var(--ouro); color: var(--ouro); }
+  .btn-pag.ativo { background: var(--tinta); color: var(--sépia); border-color: var(--tinta); }
+  .btn-pag:disabled { opacity: 0.35; cursor: default; }
+
+  /* ── Modal de detalhe ── */
+  .overlay {
+    display: none;
+    position: fixed; inset: 0;
+    background: rgba(28,24,20,0.6);
+    z-index: 100;
+    align-items: center;
+    justify-content: center;
+    padding: 1rem;
+  }
+  .overlay.aberto { display: flex; }
+
+  .modal {
+    background: var(--fundo-card);
+    border: 1px solid var(--linha);
+    border-top: 3px solid var(--ouro);
+    border-radius: 2px;
+    max-width: 680px;
+    width: 100%;
+    max-height: 85vh;
+    overflow-y: auto;
+    padding: 2rem;
+    position: relative;
+  }
+  .modal-fechar {
+    position: absolute;
+    top: 1rem; right: 1rem;
+    background: none; border: none;
+    font-size: 1.3rem;
+    cursor: pointer;
+    color: var(--tinta-clara);
+    line-height: 1;
+  }
+  .modal-tipo {
+    font-size: 0.7rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--tinta-clara);
+    margin-bottom: 0.3rem;
+  }
+  .modal-titulo {
+    font-family: 'EB Garamond', serif;
+    font-size: 1.7rem;
+    font-weight: 500;
+    margin-bottom: 1.2rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid var(--linha);
+  }
+  .modal-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.8rem 1.5rem;
+  }
+  .modal-campo { display: flex; flex-direction: column; gap: 0.15rem; }
+  .modal-campo.largo { grid-column: 1 / -1; }
+  .modal-campo label {
+    font-size: 0.68rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--tinta-clara);
+  }
+  .modal-campo span {
+    font-family: 'EB Garamond', serif;
+    font-size: 1.05rem;
+    color: var(--tinta);
+  }
+  .modal-campo span.vazio { color: var(--linha); font-style: italic; font-size: 0.85rem; }
+
+  /* ── Estado vazio / carregando ── */
+  .estado {
+    text-align: center;
+    padding: 3rem 1rem;
+    color: var(--tinta-clara);
+  }
+  .estado svg { margin-bottom: 1rem; opacity: 0.3; }
+  .estado p { font-family: 'EB Garamond', serif; font-size: 1.2rem; font-style: italic; }
+
+  @media (max-width: 600px) {
+    h1 { font-size: 1.8rem; }
+    .stats-bar { gap: 1.5rem; }
+    .modal-grid { grid-template-columns: 1fr; }
+    .card { grid-template-columns: auto 1fr; }
+    .card-ano { grid-column: 2; grid-row: 1; text-align: left; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="titulo-latim">In nomine Dei</div>
+  <h1>Registos Paroquiais</h1>
+  <div class="subtitulo">Arquivo de Batismos · Casamentos · Óbitos</div>
+</header>
+
+<div class="stats-bar" id="statsBar">
+  <div class="stat"><div class="stat-valor" id="statBatismos">—</div><div class="stat-label">Batismos</div></div>
+  <div class="stat"><div class="stat-valor" id="statCasamentos">—</div><div class="stat-label">Casamentos</div></div>
+  <div class="stat"><div class="stat-valor" id="statObitos">—</div><div class="stat-label">Óbitos</div></div>
+</div>
+
+<main>
+  <div class="painel-pesquisa">
+    <div class="campo-principal">
+      <input type="text" id="campoPesquisa" placeholder="Pesquisar por nome, pai, mãe, testemunha…" autocomplete="off">
+      <button class="btn-pesquisar" onclick="pesquisar(1)">Pesquisar</button>
+    </div>
+    <div class="filtros">
+      <div class="filtro-grupo">
+        <label>Tipo de registo</label>
+        <select id="filtrTipo">
+          <option value="">Todos</option>
+          <option value="batismo">Batismos</option>
+          <option value="casamento">Casamentos</option>
+          <option value="obito">Óbitos</option>
+        </select>
+      </div>
+      <div class="filtro-grupo">
+        <label>Período</label>
+        <div class="filtro-anos">
+          <input type="number" id="filtrAnoMin" placeholder="Desde" min="1500" max="2100">
+          <span>–</span>
+          <input type="number" id="filtrAnoMax" placeholder="Até" min="1500" max="2100">
+        </div>
+      </div>
+      <div class="filtro-grupo">
+        <label>Fonte</label>
+        <select id="filtrFonte">
+          <option value="">Todas</option>
+        </select>
+      </div>
+      <button class="btn-limpar" onclick="limparFiltros()">Limpar filtros</button>
+    </div>
+  </div>
+
+  <div id="infoResultados" class="info-resultados" style="display:none">
+    <span id="textoResultados"></span>
+  </div>
+
+  <div id="listaResultados" class="lista-resultados"></div>
+  <div id="paginacao" class="paginacao"></div>
+</main>
+
+<!-- Modal de detalhe -->
+<div class="overlay" id="overlay" onclick="fecharModal(event)">
+  <div class="modal" id="modal">
+    <button class="modal-fechar" onclick="fecharModal()">✕</button>
+    <div class="modal-tipo" id="modalTipo"></div>
+    <div class="modal-titulo" id="modalTitulo"></div>
+    <div class="modal-grid" id="modalGrid"></div>
+  </div>
+</div>
+
+<script>
+const API = '';  // mesmo servidor
+let paginaAtual = 1;
+
+// ── Inicialização ────────────────────────────────────────────────────────────
+
+async function init() {
+  await carregarEstatisticas();
+  await carregarFontes();
+
+  document.getElementById('campoPesquisa').addEventListener('keydown', e => {
+    if (e.key === 'Enter') pesquisar(1);
+  });
+}
+
+async function carregarEstatisticas() {
+  try {
+    const r = await fetch(`${API}/api/estatisticas`);
+    const d = await r.json();
+    document.getElementById('statBatismos').textContent =
+      (d.batismos.total || 0).toLocaleString('pt-PT');
+    document.getElementById('statCasamentos').textContent =
+      (d.casamentos.total || 0).toLocaleString('pt-PT');
+    document.getElementById('statObitos').textContent =
+      (d.obitos.total || 0).toLocaleString('pt-PT');
+  } catch(e) {}
+}
+
+async function carregarFontes() {
+  try {
+    const r = await fetch(`${API}/api/fontes`);
+    const fontes = await r.json();
+    const sel = document.getElementById('filtrFonte');
+    fontes.forEach(f => {
+      const opt = document.createElement('option');
+      opt.value = f; opt.textContent = f;
+      sel.appendChild(opt);
+    });
+  } catch(e) {}
+}
+
+// ── Pesquisa ─────────────────────────────────────────────────────────────────
+
+async function pesquisar(pagina) {
+  paginaAtual = pagina;
+  const q = document.getElementById('campoPesquisa').value.trim();
+  const tipo = document.getElementById('filtrTipo').value;
+  const anoMin = document.getElementById('filtrAnoMin').value;
+  const anoMax = document.getElementById('filtrAnoMax').value;
+  const fonte = document.getElementById('filtrFonte').value;
+
+  const params = new URLSearchParams({ pagina, por_pagina: 25 });
+  if (q) params.set('q', q);
+  if (tipo) params.set('tipo', tipo);
+  if (anoMin) params.set('ano_min', anoMin);
+  if (anoMax) params.set('ano_max', anoMax);
+  if (fonte) params.set('fonte', fonte);
+
+  mostrarCarregando();
+
+  try {
+    const r = await fetch(`${API}/api/pesquisar?${params}`);
+    const d = await r.json();
+    renderResultados(d, q);
+  } catch(e) {
+    document.getElementById('listaResultados').innerHTML =
+      `<div class="estado"><p>Erro ao contactar o servidor.</p></div>`;
+  }
+}
+
+function mostrarCarregando() {
+  document.getElementById('infoResultados').style.display = 'none';
+  document.getElementById('listaResultados').innerHTML =
+    `<div class="estado"><p>A pesquisar…</p></div>`;
+  document.getElementById('paginacao').innerHTML = '';
+}
+
+function renderResultados(d, q) {
+  const lista = document.getElementById('listaResultados');
+  const info = document.getElementById('infoResultados');
+
+  if (d.total === 0) {
+    lista.innerHTML = `<div class="estado">
+      <p>Nenhum registo encontrado${q ? ` para "${q}"` : ''}.</p>
+    </div>`;
+    info.style.display = 'none';
+    document.getElementById('paginacao').innerHTML = '';
+    return;
+  }
+
+  info.style.display = 'flex';
+  const inicio = (d.pagina - 1) * d.por_pagina + 1;
+  const fim = Math.min(d.pagina * d.por_pagina, d.total);
+  document.getElementById('textoResultados').textContent =
+    `A mostrar ${inicio}–${fim} de ${d.total.toLocaleString('pt-PT')} registos`;
+
+  lista.innerHTML = '';
+  d.resultados.forEach(reg => {
+    const card = document.createElement('div');
+    card.className = 'card';
+    card.dataset.tipo = reg.tipo;
+
+    const tipoLabel = { batismo: 'Batismo', casamento: 'Casamento', obito: 'Óbito' }[reg.tipo];
+    const detalhes = [];
+    if (reg.data) detalhes.push(reg.data);
+    if (reg.local) detalhes.push(reg.local);
+    if (reg.pai || reg.mae) {
+      const pais = [reg.pai, reg.mae].filter(Boolean).join(' & ');
+      detalhes.push(`Fil. de ${pais}`);
+    }
+
+    card.innerHTML = `
+      <span class="badge badge-${reg.tipo}">${tipoLabel}</span>
+      <div>
+        <div class="card-nome">${destacar(reg.nome || '—', q)}</div>
+        <div class="card-detalhe">${detalhes.join(' · ')}</div>
+      </div>
+      <div class="card-ano">${reg.ano || '—'}</div>
+    `;
+    card.addEventListener('click', () => abrirDetalhe(reg.tipo, reg.id));
+    lista.appendChild(card);
+  });
+
+  renderPaginacao(d);
+}
+
+function destacar(texto, q) {
+  if (!q || !texto) return texto;
+  const termos = q.trim().split(/\s+/).map(t => t.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'));
+  const regex = new RegExp(`(${termos.join('|')})`, 'gi');
+  return texto.replace(regex, '<mark style="background:#f0e68c;padding:0 1px">$1</mark>');
+}
+
+// ── Paginação ─────────────────────────────────────────────────────────────────
+
+function renderPaginacao(d) {
+  const cont = document.getElementById('paginacao');
+  if (d.paginas <= 1) { cont.innerHTML = ''; return; }
+
+  const paginas = [];
+  const atual = d.pagina;
+  const total = d.paginas;
+
+  paginas.push(1);
+  if (atual > 3) paginas.push('...');
+  for (let p = Math.max(2, atual - 1); p <= Math.min(total - 1, atual + 1); p++)
+    paginas.push(p);
+  if (atual < total - 2) paginas.push('...');
+  if (total > 1) paginas.push(total);
+
+  cont.innerHTML = paginas.map(p => {
+    if (p === '...') return `<span style="padding:0.4rem 0.4rem;color:var(--tinta-clara)">…</span>`;
+    return `<button class="btn-pag ${p === atual ? 'ativo' : ''}"
+      onclick="pesquisar(${p})">${p}</button>`;
+  }).join('');
+}
+
+// ── Modal de detalhe ──────────────────────────────────────────────────────────
+
+const CAMPOS = {
+  batismo: [
+    { campo: 'ano', label: 'Ano' },
+    { campo: 'data_nasc', label: 'Data de nascimento' },
+    { campo: 'local_nascimento', label: 'Local de nascimento' },
+    { campo: 'nr_ordem', label: 'Nº de ordem' },
+    { campo: 'fls', label: 'Fólios' },
+    { campo: 'fonte', label: 'Fonte' },
+    { campo: 'pai', label: 'Pai' },
+    { campo: 'mae', label: 'Mãe' },
+    { campo: 'avo_paterno', label: 'Avô paterno' },
+    { campo: 'avo_paterna', label: 'Avó paterna' },
+    { campo: 'avo_materno', label: 'Avô materno' },
+    { campo: 'avo_materna', label: 'Avó materna' },
+    { campo: 'notas', label: 'Notas', largo: true },
+  ],
+  casamento: [
+    { campo: 'ano', label: 'Ano' },
+    { campo: 'data', label: 'Data' },
+    { campo: 'local', label: 'Local' },
+    { campo: 'nr_ordem', label: 'Nº de ordem' },
+    { campo: 'fls', label: 'Fólios' },
+    { campo: 'fonte', label: 'Fonte' },
+    { campo: 'noivo', label: 'Noivo' },
+    { campo: 'idade_dnasc_noivo', label: 'Idade / D. Nasc. (noivo)' },
+    { campo: 'nat_noivo', label: 'Naturalidade (noivo)' },
+    { campo: 'noiva', label: 'Noiva' },
+    { campo: 'idade_dnasc_noiva', label: 'Idade / D. Nasc. (noiva)' },
+    { campo: 'nat_noiva', label: 'Naturalidade (noiva)' },
+    { campo: 'pai_noivo', label: 'Pai do noivo' },
+    { campo: 'nat_pai_noivo', label: 'Naturalidade (pai do noivo)' },
+    { campo: 'mae_noivo', label: 'Mãe do noivo' },
+    { campo: 'nat_mae_noivo', label: 'Naturalidade (mãe do noivo)' },
+    { campo: 'pai_noiva', label: 'Pai da noiva' },
+    { campo: 'nat_pai_noiva', label: 'Naturalidade (pai da noiva)' },
+    { campo: 'mae_noiva', label: 'Mãe da noiva' },
+    { campo: 'nat_mae_noiva', label: 'Naturalidade (mãe da noiva)' },
+    { campo: 'testemunha1', label: 'Testemunha 1' },
+    { campo: 'testemunha2', label: 'Testemunha 2' },
+    { campo: 'notas', label: 'Notas', largo: true },
+  ],
+  obito: [
+    { campo: 'ano', label: 'Ano' },
+    { campo: 'data_obito', label: 'Data de óbito' },
+    { campo: 'local', label: 'Local' },
+    { campo: 'nr_ordem', label: 'Nº de ordem' },
+    { campo: 'fls', label: 'Fólios' },
+    { campo: 'fonte', label: 'Fonte' },
+    { campo: 'pai', label: 'Pai' },
+    { campo: 'mae', label: 'Mãe' },
+    { campo: 'notas', label: 'Notas', largo: true },
+  ],
+};
+
+async function abrirDetalhe(tipo, id) {
+  try {
+    const r = await fetch(`${API}/api/registo/${tipo}/${id}`);
+    const reg = await r.json();
+
+    const tipoLabel = { batismo: 'Batismo', casamento: 'Casamento', obito: 'Óbito' }[tipo];
+    document.getElementById('modalTipo').textContent = tipoLabel;
+
+    let titulo = '';
+    if (tipo === 'casamento') titulo = `${reg.noivo || '—'} & ${reg.noiva || '—'}`;
+    else titulo = reg.nome || '—';
+    if (reg.ano) titulo += ` · ${reg.ano}`;
+    document.getElementById('modalTitulo').textContent = titulo;
+
+    const grid = document.getElementById('modalGrid');
+    grid.innerHTML = '';
+
+    (CAMPOS[tipo] || []).forEach(({ campo, label, largo }) => {
+      const val = reg[campo];
+      if (!val && val !== 0) return;
+      const div = document.createElement('div');
+      div.className = `modal-campo${largo ? ' largo' : ''}`;
+      div.innerHTML = `<label>${label}</label><span>${val}</span>`;
+      grid.appendChild(div);
+    });
+
+    document.getElementById('overlay').classList.add('aberto');
+    document.body.style.overflow = 'hidden';
+  } catch(e) {}
+}
+
+function fecharModal(e) {
+  if (e && e.target !== document.getElementById('overlay')) return;
+  document.getElementById('overlay').classList.remove('aberto');
+  document.body.style.overflow = '';
+}
+
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') fecharModal({ target: document.getElementById('overlay') });
+});
+
+function limparFiltros() {
+  document.getElementById('campoPesquisa').value = '';
+  document.getElementById('filtrTipo').value = '';
+  document.getElementById('filtrAnoMin').value = '';
+  document.getElementById('filtrAnoMax').value = '';
+  document.getElementById('filtrFonte').value = '';
+  document.getElementById('listaResultados').innerHTML = '';
+  document.getElementById('infoResultados').style.display = 'none';
+  document.getElementById('paginacao').innerHTML = '';
+}
+
+init();
+</script>
+</body>
+</html>
