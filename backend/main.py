@@ -151,20 +151,30 @@ async def pesquisar_ia(
             system="""Responde APENAS com um objecto JSON válido, sem texto adicional, sem markdown, sem explicações.
 Interpreta a pesquisa genealógica e extrai os campos relevantes:
 - nome, pai, mae, noivo, noiva, testemunha, local, fonte, ano_min, ano_max, tipo
-- avo_paterno, avo_paterna, avo_materno, avo_materna (avós paternos e maternos)
+- avo_paterno (avô paterno), avo_paterna (avó paterna)
+- avo_materno (avô materno), avo_materna (avó materna)
 
 Exemplos:
 Input: "joão filho de pedro"
 Output: {"nome":"joão","pai":"pedro"}
 
-Input: "casamentos da família silva em 1823"
-Output: {"tipo":"casamento","nome":"silva","ano_min":1823,"ano_max":1823}
-
 Input: "filho de joão frade e maria salgueira"
 Output: {"pai":"joão frade","mae":"maria salgueira"}
 
-Input: "neto de manuel silva"
+Input: "neto paterno de manuel silva"
 Output: {"avo_paterno":"manuel silva"}
+
+Input: "neta materna de ana ferreira"
+Output: {"avo_materna":"ana ferreira"}
+
+Input: "cujo avô paterno era joão rodrigues"
+Output: {"avo_paterno":"joão rodrigues"}
+
+Input: "cuja avó materna era isabel sousa"
+Output: {"avo_materna":"isabel sousa"}
+
+Input: "casamentos da família silva em 1823"
+Output: {"tipo":"casamento","nome":"silva","ano_min":1823,"ano_max":1823}
 
 Devolve APENAS o JSON. Nenhuma palavra adicional.""",
             messages=[{"role": "user", "content": q}]
