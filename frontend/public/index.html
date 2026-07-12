@@ -948,10 +948,6 @@
         </div>
         <div id="facetasConteudo"></div>
       </div>
-      <div>
-        <div id="listaResultados" class="lista-resultados"></div>
-        <div id="paginacao" class="paginacao"></div>
-      </div>
     </div>
     
     <!-- Drawer mobile -->
@@ -1368,11 +1364,15 @@ async function carregarGraficos() {
       fetch(`${API}/api/estatisticas-freguesias`),
       fetch(`${API}/api/estatisticas-detalhadas`),
     ]);
+    console.log('freguesias status:', rFreg.status);
+    console.log('detalhadas status:', rDet.status);
     const freguesias = await rFreg.json();
     const detalhadas = await rDet.json();
+    console.log('freguesias:', JSON.stringify(freguesias));
     renderEstatisticas(freguesias, detalhadas);
   } catch(e) {
-    cont.innerHTML = '<div class="estado"><p>Erro ao carregar estatísticas.</p></div>';
+    console.error('Erro estatísticas:', e);
+    cont.innerHTML = '<div class="estado"><p>Erro ao carregar estatísticas: ' + e.message + '</p></div>';
   }
 }
 
