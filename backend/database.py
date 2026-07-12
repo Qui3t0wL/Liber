@@ -232,6 +232,26 @@ class Database:
         conn.close()
         return stats
 
+    def estatisticas_detalhadas(self) -> dict:
+        conn = self._conn()
+        cur = conn.cursor()
+        resultado = {}
+        for nome, tabela, campo_data in [
+            ("batismos_por_decada",    "batismos",   "ano"),
+            ("casamentos_por_decada",  "casamentos", "ano"),
+            ("obitos_por_decada",      "obitos",     "ano"),
+        ]:
+            cur.execute(f"""
+                SELECT (ano / 10) * 10 as decada, COUNT(*) as total
+                FROM {tabela}
+                WHERE ano IS NOT NULL
+                GROUP BY decada
+                ORDER BY decada
+            """)
+            resultado[nome] = [{"decada": r[0], "total": r[1]} for r in cur.fetchall()]
+        conn.close()
+        return resultado
+
     def listar_fontes(self) -> List[str]:
         conn = self._conn()
         cur = conn.cursor()
