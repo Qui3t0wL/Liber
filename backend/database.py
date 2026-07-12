@@ -1,11 +1,30 @@
 import sqlite3
 import os
+import re
 from typing import Optional, Tuple, List
 from datetime import datetime
 
 DB_PATH = os.environ.get("DB_PATH", "registos.db")
 
+def _calcular_relevancia(reg, q):
+    """Devolve score de relevância: menor = mais relevante."""
+    if not q:
+        return 0
+    termos = q.strip().split()
+    padrao_ordenado = ".*".join(re.escape(t) for t in termos)
+    nome = reg.get("nome") or reg.get("_nome_sort") or ""
 
+    # Frase exacta
+    if q.lower() in nome.lower():
+        return 0
+    # Tokens pela ordem (com palavras no meio)
+    if re.search(padrao_ordenado, nome, re.IGNORECASE):
+        return 1
+    # Todos os termos presentes em qualquer ordem
+    if all(t.lower() in nome.lower() for t in termos):
+        return 2
+    return 3
+    
 class Database:
     def __init__(self):
         self.path = DB_PATH
@@ -125,7 +144,6 @@ class Database:
         conn.close()
 
     # ── Pesquisa unificada ────────────────────────────────────────────────────
-
     def pesquisar(
         self, q: Optional[str], tipo: Optional[str],
         ano_min: Optional[int], ano_max: Optional[int],
@@ -140,7 +158,8 @@ class Database:
             todos.extend(rows)
 
         # Ordenar por ano desc, depois nome
-        todos.sort(key=lambda r: ((r.get("ano") or 0), r.get("_nome_sort", "")))
+        q_sort = q or ""
+        todos.sort(key=lambda r: (_calcular_relevancia(r, q_sort),(r.get("ano") or 0)))
 
         total = len(todos)
         inicio = (pagina - 1) * por_pagina
@@ -188,12 +207,36 @@ class Database:
 
         if q:
             termos = q.strip().split()
-            for termo in termos:
-                condicoes = " OR ".join(
-                    [f"{c} LIKE ? COLLATE NOCASE" for c in campos_nome]
-                )
+        
+            if len(termos) == 1:
+                # Palavra única — pesquisa normal
+                condicoes = " OR ".join([f"{c} LIKE ? COLLATE NOCASE" for c in campos_nome])
                 where.append(f"({condicoes})")
-                params.extend([f"%{termo}%"] * len(campos_nome))
+                params.extend([f"%{termos[0]}%"] * len(campos_nome))
+        
+            else:
+                # Frase composta — três níveis de correspondência por prioridade:
+                # Nível 1: frase exacta ("José Alves")
+                cond_exacta = " OR ".join([f"{c} LIKE ? COLLATE NOCASE" for c in campos_nome])
+                params_exacta = [f"%{q.strip()}%"] * len(campos_nome)
+        
+                # Nível 2: tokens pela ordem com palavras no meio
+                # "José Alves" → LIKE '%José%Alves%'
+                padrao_ordenado = "%" + "%".join(termos) + "%"
+                cond_ordenada = " OR ".join([f"{c} LIKE ? COLLATE NOCASE" for c in campos_nome])
+                params_ordenada = [padrao_ordenado] * len(campos_nome)
+        
+                # Nível 3: todos os termos presentes em qualquer ordem
+                # "José Alves" → contém "José" E contém "Alves"
+                conds_termos = []
+                params_termos = []
+                for termo in termos:
+                    cond_termo = " OR ".join([f"{c} LIKE ? COLLATE NOCASE" for c in campos_nome])
+                    conds_termos.append(f"({cond_termo})")
+                    params_termos.extend([f"%{termo}%"] * len(campos_nome))
+        
+                where.append(f"(({cond_exacta}) OR ({cond_ordenada}) OR ({' AND '.join(conds_termos)}))")
+                params = params_exacta + params_ordenada + params_termos + params
 
         if ano_min:
             where.append("ano >= ?")
