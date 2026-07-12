@@ -99,6 +99,10 @@ class Database:
             nome        TEXT,
             data_obito  TEXT,
             local       TEXT,
+            local_falecimento TEXT,
+            idade       TEXT,
+            nat_pai     TEXT,
+            nat_mae     TEXT,
             pai         TEXT,
             mae         TEXT,
             notas       TEXT
@@ -319,13 +323,14 @@ class Database:
     def inserir_obitos(self, registos: List[dict], upload_id: int):
         conn = self._conn()
         cur = conn.cursor()
-        campos = ['fonte','fls','ano','nr_ordem','nome','data_obito','local','pai','mae','notas']
+        campos = ['fonte','fls','ano','nr_ordem','nome','data_obito','local',
+                  'local_falecimento','idade','nat_pai','nat_mae','pai','mae','notas']
         cur.executemany("""
             INSERT INTO obitos
             (upload_id, fonte, fls, ano, nr_ordem, nome, data_obito,
-             local, pai, mae, notas)
+             local, local_falecimento, idade, nat_pai, nat_mae, pai, mae, notas)
             VALUES
-            (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         """, [
             (upload_id, *[r.get(c) for c in campos])
             for r in registos
