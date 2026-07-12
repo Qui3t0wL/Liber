@@ -218,7 +218,7 @@ class Database:
             select = """
                 SELECT id, 'casamento' as tipo, fonte, ano,
                        (noivo || ' & ' || noiva) as nome,
-                       data, local, pai_noivo as pai, mae_noivo as mae, notas,
+                       data, residencia as local, pai_noivo as pai, mae_noivo as mae, notas,
                        noivo as _nome_sort
                 FROM casamentos
             """
@@ -227,7 +227,7 @@ class Database:
             campos_nome = ["nome", "pai", "mae"]
             select = """
                 SELECT id, 'obito' as tipo, fonte, ano, nome,
-                       data_obito as data, local,
+                       data_obito as data, local_falecimento as local,
                        pai, mae, notas,
                        nome as _nome_sort
                 FROM obitos
