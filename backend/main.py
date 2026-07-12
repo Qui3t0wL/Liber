@@ -165,16 +165,9 @@ Output: {"pai":"joão frade","mae":"maria salgueira"}
 Devolve APENAS o JSON. Nenhuma palavra adicional.""",
             messages=[{"role": "user", "content": q}]
         )
-
-        # DEBUG TEMPORÁRIO
-        print(f"DEBUG stop_reason: {resposta.stop_reason}")
-        print(f"DEBUG content length: {len(resposta.content)}")
-        print(f"DEBUG content: {resposta.content}")
         
         filtros_raw = resposta.content[0].text.strip()
 
-        print(f"DEBUG filtros_raw antes: {repr(filtros_raw)}")
-        
         # Remover markdown code blocks se presentes
         if filtros_raw.startswith("```"):
             filtros_raw = filtros_raw.split("```")[1]
@@ -185,13 +178,9 @@ Devolve APENAS o JSON. Nenhuma palavra adicional.""",
         # Extrair JSON se houver texto à volta
         match = re.search(r'\{.*\}', filtros_raw, re.DOTALL)
         filtros_raw = match.group(0) if match else filtros_raw
-
-        print(f"DEBUG filtros_raw depois: {repr(filtros_raw)}")
         
         filtros = json.loads(filtros_raw)
         usou_ia = True
-
-        print(f"DEBUG filtros finais: {filtros}")
 
     except Exception:
         # Fallback para interpretação por padrões
