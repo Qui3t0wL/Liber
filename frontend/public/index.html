@@ -686,7 +686,7 @@
         <input type="text" id="campoPesquisa" placeholder="Pesquisar por nome, pai, mãe, testemunha…" autocomplete="off">
         <div class="btns-pesquisa">
           <button class="btn-pesquisar" onclick="pesquisar(1)">Pesquisar</button>
-          <button class="btn-pesquisar btn-ia" onclick="pesquisarIA(1)">
+          <button class="btn-pesquisar btn-ia" id="btnIA" onclick="pesquisarIA(1)">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
               <path d="M12 2l2.4 7.4H22l-6.2 4.5 2.4 7.4L12 17l-6.2 4.3 2.4-7.4L2 9.4h7.6z"/>
             </svg>
@@ -852,9 +852,22 @@ let dadosEstatisticas = null;
 
 async function init() {
   await Promise.all([carregarEstatisticas(), carregarFontes()]);
+  await verificarAcessoIA();
   document.getElementById('campoPesquisa').addEventListener('keydown', e => {
     if (e.key === 'Enter') pesquisar(1);
   });
+}
+
+async function verificarAcessoIA() {
+  try {
+    // Tenta um pedido mínimo ao endpoint IA — se der 403 é externo
+    const r = await fetch(`${API}/api/pesquisar-ia?q=teste`, { method: 'GET' });
+    if (r.status === 403) {
+      document.getElementById('btnIA').style.display = 'none';
+    }
+  } catch(e) {
+    document.getElementById('btnIA').style.display = 'none';
+  }
 }
 
 async function carregarEstatisticas() {
