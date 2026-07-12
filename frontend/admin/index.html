@@ -689,8 +689,130 @@ function esconderAlerta() {
   document.getElementById('alerta').style.display = 'none';
 }
 
+async function carregarAuditoria() {
+  try {
+    const r = await fetch('/admin/api/auditoria');
+    const d = await r.json();
+    renderAuditoria(d);
+  } catch(e) {
+    document.getElementById('auditoriaConteudo').innerHTML =
+      '<div class="painel"><p class="vazio">Erro ao carregar auditoria.</p></div>';
+  }
+}
+
+function renderAuditoria(d) {
+  const cont = document.getElementById('auditoriaConteudo');
+  const t = d.totais;
+
+  cont.innerHTML = `
+    <!-- Totais -->
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:1rem;margin-bottom:1rem">
+      <div class="painel" style="text-align:center;padding:1rem">
+        <div style="font-size:1.8rem;font-weight:700;color:#4A5E76">${(t.total_pedidos||0).toLocaleString('pt-PT')}</div>
+        <div style="font-size:0.7rem;text-transform:uppercase;letter-spacing:0.06em;color:var(--texto-sub);margin-top:0.2rem">Pedidos totais</div>
+      </div>
+      <div class="painel" style="text-align:center;padding:1rem">
+        <div style="font-size:1.8rem;font-weight:700;color:#4A5E76">${(t.ips_unicos||0).toLocaleString('pt-PT')}</div>
+        <div style="font-size:0.7rem;text-transform:uppercase;letter-spacing:0.06em;color:var(--texto-sub);margin-top:0.2rem">IPs únicos</div>
+      </div>
+      <div class="painel" style="text-align:center;padding:1rem">
+        <div style="font-size:1.8rem;font-weight:700;color:${t.total_erros > 0 ? '#c44030' : '#2a9a5a'}">${(t.total_erros||0).toLocaleString('pt-PT')}</div>
+        <div style="font-size:0.7rem;text-transform:uppercase;letter-spacing:0.06em;color:var(--texto-sub);margin-top:0.2rem">Erros / bloqueios</div>
+      </div>
+    </div>
+
+    <!-- Por IP -->
+    <div class="painel" style="margin-bottom:1rem">
+      <div style="font-size:0.7rem;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;color:var(--texto-sub);margin-bottom:0.8rem">
+        Acessos por IP
+      </div>
+      ${d.por_ip.length === 0 ? '<p class="vazio">Sem dados</p>' : `
+      <table class="tabela-historico">
+        <thead>
+          <tr>
+            <th>IP</th>
+            <th>Total</th>
+            <th>Pesquisas</th>
+            <th>Admin</th>
+            <th>Primeiro acesso</th>
+            <th>Último acesso</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${d.por_ip.map(r => `
+            <tr>
+              <td style="font-family:monospace;font-size:0.8rem">${r.ip}</td>
+              <td style="font-weight:600">${r.total.toLocaleString('pt-PT')}</td>
+              <td>${r.pesquisas.toLocaleString('pt-PT')}</td>
+              <td>${r.admin > 0 ? `<span style="color:#F4794A;font-weight:500">${r.admin}</span>` : '0'}</td>
+              <td style="font-size:0.78rem;color:var(--texto-sub)">${r.primeiro_acesso?.substring(0,16).replace('T',' ') || '—'}</td>
+              <td style="font-size:0.78rem;color:var(--texto-sub)">${r.ultimo_acesso?.substring(0,16).replace('T',' ') || '—'}</td>
+            </tr>
+          `).join('')}
+        </tbody>
+      </table>`}
+    </div>
+
+    <!-- Actividade por dia -->
+    <div class="painel" style="margin-bottom:1rem">
+      <div style="font-size:0.7rem;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;color:var(--texto-sub);margin-bottom:0.8rem">
+        Actividade diária (últimos 30 dias)
+      </div>
+      ${d.por_dia.length === 0 ? '<p class="vazio">Sem dados</p>' : `
+      <div style="display:flex;flex-direction:column;gap:0.3rem">
+        ${d.por_dia.slice(0,30).map(r => {
+          const max = Math.max(...d.por_dia.slice(0,30).map(x => x.total));
+          const pct = max ? Math.round(r.total / max * 100) : 0;
+          return `
+          <div style="display:grid;grid-template-columns:90px 1fr 50px 60px;gap:0.5rem;align-items:center;font-size:0.78rem">
+            <span style="color:var(--texto-sub)">${r.dia}</span>
+            <div style="background:var(--linha);border-radius:2px;height:7px;overflow:hidden">
+              <div style="background:#4A5E76;height:100%;width:${pct}%;border-radius:2px"></div>
+            </div>
+            <span style="font-weight:500">${r.total}</span>
+            <span style="color:var(--texto-sub);font-size:0.72rem">${r.ips_unicos} IP${r.ips_unicos !== 1 ? 's' : ''}</span>
+          </div>`;
+        }).join('')}
+      </div>`}
+    </div>
+
+    <!-- Eventos suspeitos -->
+    ${d.suspeitos.length > 0 ? `
+    <div class="painel" style="border-color:#c44030">
+      <div style="font-size:0.7rem;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;color:#c44030;margin-bottom:0.8rem">
+        ⚠ Eventos suspeitos (403 · 429 · 5xx)
+      </div>
+      <table class="tabela-historico">
+        <thead>
+          <tr><th>Data</th><th>IP</th><th>Endpoint</th><th>Status</th></tr>
+        </thead>
+        <tbody>
+          ${d.suspeitos.slice(0,20).map(r => `
+            <tr>
+              <td style="font-size:0.75rem;color:var(--texto-sub)">${r.data?.substring(0,16).replace('T',' ')}</td>
+              <td style="font-family:monospace;font-size:0.78rem">${r.ip}</td>
+              <td style="font-size:0.75rem;color:var(--texto-sub)">${r.endpoint}</td>
+              <td><span style="color:${r.status >= 500 ? '#c44030' : r.status === 429 ? '#c49a20' : '#8a5a00'};font-weight:600">${r.status}</span></td>
+            </tr>
+          `).join('')}
+        </tbody>
+      </table>
+    </div>` : ''}
+  `;
+}
+	
 carregarHistorico();
+carregarAuditoria();
 </script>
+<!-- Auditoria -->
+<div class="secao">
+  <h2>Auditoria de acessos <span style="font-size:0.7rem;font-weight:400;color:var(--texto-sub)">(últimos 90 dias)</span></h2>
+  <div id="auditoriaConteudo">
+    <div class="painel">
+      <p class="vazio">A carregar…</p>
+    </div>
+  </div>
+</div>
 <footer>
   <div class="footer-inner">
     <p class="footer-principal">
