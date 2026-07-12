@@ -101,53 +101,60 @@ class Database:
         # Casamentos
         cur.execute("""
         CREATE TABLE IF NOT EXISTS casamentos (
+            id                  INTEGER PRIMARY KEY AUTOINCREMENT,
+            upload_id           INTEGER REFERENCES uploads(id),
+            fonte               TEXT,
+            fls                 TEXT,
+            ano                 INTEGER,
+            nr_ordem            TEXT,
+            data                TEXT,
+            noivo               TEXT,
+            idade_dnasc_noivo   TEXT,
+            nat_noivo           TEXT,
+            noiva               TEXT,
+            idade_dnasc_noiva   TEXT,
+            nat_noiva           TEXT,
+            residencia          TEXT,
+            pai_noivo           TEXT,
+            nat_pai_noivo       TEXT,
+            mae_noivo           TEXT,
+            nat_mae_noivo       TEXT,
+            pai_noiva           TEXT,
+            nat_pai_noiva       TEXT,
+            mae_noiva           TEXT,
+            nat_mae_noiva       TEXT,
+            avo_paterno_noivo   TEXT,
+            avo_paterna_noivo   TEXT,
+            avo_materno_noivo   TEXT,
+            avo_materna_noivo   TEXT,
+            avo_paterno_noiva   TEXT,
+            avo_paterna_noiva   TEXT,
+            avo_materno_noiva   TEXT,
+            avo_materna_noiva   TEXT,
+            testemunha1         TEXT,
+            testemunha2         TEXT,
+            notas               TEXT
+        )
+        """)
+        
+        # Óbitos
+        cur.execute("""
+        CREATE TABLE IF NOT EXISTS obitos (
             id                INTEGER PRIMARY KEY AUTOINCREMENT,
             upload_id         INTEGER REFERENCES uploads(id),
             fonte             TEXT,
             fls               TEXT,
             ano               INTEGER,
             nr_ordem          TEXT,
-            data              TEXT,
-            noivo             TEXT,
-            idade_dnasc_noivo TEXT,
-            nat_noivo         TEXT,
-            noiva             TEXT,
-            idade_dnasc_noiva TEXT,
-            nat_noiva         TEXT,
-            local             TEXT,
-            pai_noivo         TEXT,
-            nat_pai_noivo     TEXT,
-            mae_noivo         TEXT,
-            nat_mae_noivo     TEXT,
-            pai_noiva         TEXT,
-            nat_pai_noiva     TEXT,
-            mae_noiva         TEXT,
-            nat_mae_noiva     TEXT,
-            testemunha1       TEXT,
-            testemunha2       TEXT,
-            notas             TEXT
-        )
-        """)
-
-        # Óbitos
-        cur.execute("""
-        CREATE TABLE IF NOT EXISTS obitos (
-            id          INTEGER PRIMARY KEY AUTOINCREMENT,
-            upload_id   INTEGER REFERENCES uploads(id),
-            fonte       TEXT,
-            fls         TEXT,
-            ano         INTEGER,
-            nr_ordem    TEXT,
-            nome        TEXT,
-            data_obito  TEXT,
-            local       TEXT,
+            nome              TEXT,
+            data_obito        TEXT,
             local_falecimento TEXT,
-            idade       TEXT,
-            nat_pai     TEXT,
-            nat_mae     TEXT,
-            pai         TEXT,
-            mae         TEXT,
-            notas       TEXT
+            idade             TEXT,
+            pai               TEXT,
+            nat_pai           TEXT,
+            mae               TEXT,
+            nat_mae           TEXT,
+            notas             TEXT
         )
         """)
 
@@ -365,38 +372,47 @@ class Database:
     def inserir_casamentos(self, registos: List[dict], upload_id: int):
         conn = self._conn()
         cur = conn.cursor()
-        campos = ['fonte','fls','ano','nr_ordem','data','noivo',
-                  'idade_dnasc_noivo','nat_noivo','noiva','idade_dnasc_noiva','nat_noiva',
-                  'local','pai_noivo','nat_pai_noivo','mae_noivo','nat_mae_noivo',
-                  'pai_noiva','nat_pai_noiva','mae_noiva','nat_mae_noiva',
-                  'testemunha1','testemunha2','notas']
+        campos = [
+            'fonte','fls','ano','nr_ordem','data','noivo',
+            'idade_dnasc_noivo','nat_noivo','noiva','idade_dnasc_noiva','nat_noiva',
+            'residencia','pai_noivo','nat_pai_noivo','mae_noivo','nat_mae_noivo',
+            'pai_noiva','nat_pai_noiva','mae_noiva','nat_mae_noiva',
+            'avo_paterno_noivo','avo_paterna_noivo','avo_materno_noivo','avo_materna_noivo',
+            'avo_paterno_noiva','avo_paterna_noiva','avo_materno_noiva','avo_materna_noiva',
+            'testemunha1','testemunha2','notas'
+        ]
         cur.executemany("""
             INSERT INTO casamentos
             (upload_id, fonte, fls, ano, nr_ordem, data, noivo,
              idade_dnasc_noivo, nat_noivo, noiva, idade_dnasc_noiva, nat_noiva,
-             local, pai_noivo, nat_pai_noivo, mae_noivo, nat_mae_noivo,
+             residencia, pai_noivo, nat_pai_noivo, mae_noivo, nat_mae_noivo,
              pai_noiva, nat_pai_noiva, mae_noiva, nat_mae_noiva,
+             avo_paterno_noivo, avo_paterna_noivo, avo_materno_noivo, avo_materna_noivo,
+             avo_paterno_noiva, avo_paterna_noiva, avo_materno_noiva, avo_materna_noiva,
              testemunha1, testemunha2, notas)
             VALUES
-            (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,
+             ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         """, [
             (upload_id, *[r.get(c) for c in campos])
             for r in registos
         ])
         conn.commit()
         conn.close()
-
+    
     def inserir_obitos(self, registos: List[dict], upload_id: int):
         conn = self._conn()
         cur = conn.cursor()
-        campos = ['fonte','fls','ano','nr_ordem','nome','data_obito','local',
-                  'local_falecimento','idade','nat_pai','nat_mae','pai','mae','notas']
+        campos = [
+            'fonte','fls','ano','nr_ordem','nome','data_obito',
+            'local_falecimento','idade','pai','nat_pai','mae','nat_mae','notas'
+        ]
         cur.executemany("""
             INSERT INTO obitos
             (upload_id, fonte, fls, ano, nr_ordem, nome, data_obito,
-             local, local_falecimento, idade, nat_pai, nat_mae, pai, mae, notas)
+             local_falecimento, idade, pai, nat_pai, mae, nat_mae, notas)
             VALUES
-            (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         """, [
             (upload_id, *[r.get(c) for c in campos])
             for r in registos
