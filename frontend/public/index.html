@@ -1004,11 +1004,13 @@ const SECOES = {
   obito: [
     { titulo: 'Identificação', campos: [
       {c:'nome',l:'Nome'},{c:'data_obito',l:'Data de óbito'},
-      {c:'local',l:'Local'},{c:'ano',l:'Ano'},
+      {c:'local',l:'Local'},{c:'local_falecimento',l:'Local de falecimento'},
+      {c:'idade',l:'Idade'},{c:'ano',l:'Ano'},
       {c:'nr_ordem',l:'Nº de ordem'},{c:'fls',l:'Fólios'},{c:'fonte',l:'Fonte',largo:true},
     ]},
     { titulo: 'Filiação', campos: [
-      {c:'pai',l:'Pai'},{c:'mae',l:'Mãe'},
+      {c:'pai',l:'Pai'},{c:'nat_pai',l:'Naturalidade (pai)'},
+      {c:'mae',l:'Mãe'},{c:'nat_mae',l:'Naturalidade (mãe)'},
     ]},
     { titulo: 'Notas', campos: [{c:'notas',l:'Notas',largo:true}] },
   ],
