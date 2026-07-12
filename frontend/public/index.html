@@ -562,6 +562,31 @@
   ::-webkit-scrollbar-track { background: transparent; }
   ::-webkit-scrollbar-thumb { background: var(--cinza); border-radius: 3px; }
 
+  footer {
+    background: var(--azul-escuro);
+    color: var(--cinza);
+    margin-top: 3rem;
+    padding: 2rem 1.5rem;
+  }
+  .footer-inner {
+    max-width: 1100px;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+  .footer-principal {
+    font-size: 0.78rem;
+    line-height: 1.6;
+    color: #9aa3b0;
+  }
+  .footer-rodape {
+    font-size: 0.7rem;
+    color: #6b7280;
+    border-top: 1px solid rgba(255,255,255,0.06);
+    padding-top: 0.75rem;
+  }
+
   @media (max-width: 640px) {
     header { padding: 0 1rem; }
     .container { padding: 1rem; }
@@ -634,6 +659,9 @@
   .stats-grid { grid-template-columns: 1fr; }
   .stats-card { padding: 1rem; }
   .barra-linha { grid-template-columns: 65px 1fr 35px; font-size: 0.72rem; }
+  /* Footer */
+  footer { padding: 1.5rem 1rem; margin-top: 2rem; }
+  .footer-principal { font-size: 0.75rem; }
 }
 
 /* ── Mobile pequeno (≤ 375px) ── */
@@ -1292,5 +1320,13 @@ function limparFiltros() {
 
 init();
 </script>
+<footer>
+  <div class="footer-inner">
+    <p class="footer-principal">
+      A informação disponível nesta plataforma foi recolhida a partir da compilação em Excel dos registos de batismos do Dr. Carlos Alves Bento, da transcrição de registos disponíveis no Arquivo Distrital de Santarém e no Arquivo Nacional Torre do Tombo, bem como de alguns registos paroquiais da paróquia de São Sebastião de Mouriscas. Não nos responsabilizamos por eventuais erros de transcrição.
+    </p>
+    <p class="footer-rodape">Plataforma produzida com auxílio de Inteligência Artificial · 2026</p>
+  </div>
+</footer>
 </body>
 </html>
