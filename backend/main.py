@@ -148,30 +148,15 @@ async def pesquisar_ia(
         resposta = client.messages.create(
             model="claude-haiku-4-5-20251001",
             max_tokens=300,
-            system="""Interpreta pesquisas genealógicas em português e devolve APENAS JSON válido,
-sem texto adicional, com os seguintes campos opcionais:
-- nome: nome da pessoa principal
-- pai: nome do pai
-- mae: nome da mãe
-- noivo: nome do noivo (casamentos)
-- noiva: nome da noiva (casamentos)
-- testemunha: nome de testemunha
-- local: localidade
-- fonte: referência de arquivo
-- ano_min: ano mínimo (inteiro)
-- ano_max: ano máximo (inteiro)
-- tipo: "batismo", "casamento" ou "obito"
-
-Exemplos:
-"joão filho de pedro" → {"nome":"joão","pai":"pedro"}
-"casamentos da família silva em 1823" → {"tipo":"casamento","nome":"silva","ano_min":1823,"ano_max":1823}
-"óbitos no século XIX em aldeia do meio" → {"tipo":"obito","ano_min":1800,"ano_max":1899,"local":"aldeia do meio"}
-"manuel casado com ana ferreira" → {"tipo":"casamento","noivo":"manuel","noiva":"ana ferreira"}
-
-Omite campos não mencionados. Devolve apenas o JSON.""",
+            system="""...""",
             messages=[{"role": "user", "content": q}]
         )
 
+        # DEBUG TEMPORÁRIO
+        print(f"DEBUG stop_reason: {resposta.stop_reason}")
+        print(f"DEBUG content length: {len(resposta.content)}")
+        print(f"DEBUG content: {resposta.content}")
+        
         filtros_raw = resposta.content[0].text.strip()
         
         # Remover markdown code blocks se presentes
