@@ -5,108 +5,193 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Registos Paroquiais</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;0,600;1,400&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <style>
   :root {
-    --sépia:        #f5f0e8;
-    --sépia-escura: #e8dfc8;
-    --tinta:        #1c1814;
-    --tinta-suave:  #4a4035;
-    --tinta-clara:  #8a7a68;
-    --ouro:         #8b6914;
-    --ouro-claro:   #c49a2a;
-    --linha:        #d4c8b0;
-    --batismo:      #1a4a6b;
-    --casamento:    #5a2d6b;
-    --obito:        #4a1a1a;
-    --fundo-card:   #fdfaf4;
+    --azul-escuro:  #2B2F43;
+    --azul-medio:   #4A5E76;
+    --cinza:        #BDC3C2;
+    --cinza-claro:  #E8EBEA;
+    --branco:       #FFFFFF;
+    --laranja:      #F4794A;
+    --laranja-soft: #F9C4AE;
+    --texto:        #1A1D2E;
+    --texto-sub:    #6B7280;
+    --linha:        #E5E7EB;
+    --bg:           #F6F7F9;
+
+    --batismo:      #4A5E76;
+    --casamento:    #7C5C8A;
+    --obito:        #8A3A2A;
   }
 
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
   body {
-    background: var(--sépia);
-    color: var(--tinta);
+    background: var(--bg);
+    color: var(--texto);
     font-family: 'Inter', sans-serif;
-    font-size: 15px;
-    font-weight: 300;
+    font-size: 14px;
+    font-weight: 400;
     min-height: 100vh;
   }
 
   /* ── Cabeçalho ── */
   header {
-    background: var(--tinta);
-    color: var(--sépia);
-    padding: 2.5rem 2rem 2rem;
-    text-align: center;
-    position: relative;
-    overflow: hidden;
+    background: var(--azul-escuro);
+    color: var(--branco);
+    padding: 0 2rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 60px;
+    position: sticky;
+    top: 0;
+    z-index: 50;
+    box-shadow: 0 1px 0 rgba(255,255,255,0.06);
   }
-  header::after {
-    content: '';
-    position: absolute;
-    bottom: 0; left: 0; right: 0;
-    height: 3px;
-    background: linear-gradient(90deg, transparent, var(--ouro-claro), transparent);
+  .logo {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
   }
-  .titulo-latim {
-    font-family: 'EB Garamond', serif;
-    font-style: italic;
-    font-size: 0.85rem;
-    color: var(--ouro-claro);
-    letter-spacing: 0.15em;
-    margin-bottom: 0.5rem;
-    opacity: 0.85;
+  .logo-icon {
+    width: 32px; height: 32px;
+    background: var(--laranja);
+    border-radius: 6px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 16px;
+    flex-shrink: 0;
   }
-  h1 {
-    font-family: 'EB Garamond', serif;
-    font-size: 2.4rem;
-    font-weight: 500;
-    letter-spacing: 0.02em;
-    line-height: 1.1;
+  .logo-texto {
+    font-size: 0.95rem;
+    font-weight: 600;
+    letter-spacing: -0.01em;
   }
-  .subtitulo {
-    margin-top: 0.4rem;
-    font-size: 0.8rem;
+  .logo-sub {
+    font-size: 0.7rem;
     font-weight: 300;
-    color: var(--sépia-escura);
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
+    color: var(--cinza);
+    margin-top: 1px;
   }
+  .header-nav {
+    display: flex;
+    gap: 0.5rem;
+  }
+  .btn-nav {
+    padding: 0.4rem 0.8rem;
+    border-radius: 5px;
+    font-size: 0.78rem;
+    font-weight: 500;
+    cursor: pointer;
+    border: none;
+    transition: all 0.15s;
+    background: transparent;
+    color: var(--cinza);
+  }
+  .btn-nav:hover { background: rgba(255,255,255,0.08); color: var(--branco); }
+  .btn-nav.ativo { background: var(--laranja); color: var(--branco); }
 
-  /* ── Estatísticas ── */
+  /* ── Stats bar ── */
   .stats-bar {
+    background: var(--azul-medio);
     display: flex;
     justify-content: center;
-    gap: 3rem;
-    padding: 1rem 2rem;
-    background: var(--tinta-suave);
-    color: var(--sépia);
+    gap: 0;
   }
-  .stat { text-align: center; }
+  .stat {
+    padding: 0.85rem 2.5rem;
+    text-align: center;
+    position: relative;
+    cursor: pointer;
+    transition: background 0.15s;
+  }
+  .stat:not(:last-child)::after {
+    content: '';
+    position: absolute;
+    right: 0; top: 20%; bottom: 20%;
+    width: 1px;
+    background: rgba(255,255,255,0.15);
+  }
+  .stat:hover { background: rgba(255,255,255,0.08); }
+  .stat.ativo { background: rgba(244,121,74,0.25); }
   .stat-valor {
-    font-family: 'EB Garamond', serif;
     font-size: 1.5rem;
-    font-weight: 500;
-    color: var(--ouro-claro);
+    font-weight: 700;
+    color: var(--branco);
+    line-height: 1;
   }
   .stat-label {
-    font-size: 0.7rem;
-    letter-spacing: 0.1em;
+    font-size: 0.65rem;
+    font-weight: 500;
+    letter-spacing: 0.08em;
     text-transform: uppercase;
-    opacity: 0.75;
+    color: var(--cinza);
+    margin-top: 0.2rem;
+  }
+  .stat-dot {
+    display: inline-block;
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    margin-right: 0.3rem;
+    vertical-align: middle;
   }
 
+  /* ── Layout principal ── */
+  .container { max-width: 1100px; margin: 0 auto; padding: 1.5rem; }
+
+  /* ── Vista de estatísticas ── */
+  #vistaEstatisticas { display: none; }
+
+  .stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+  }
+  .stats-card {
+    background: var(--branco);
+    border: 1px solid var(--linha);
+    border-radius: 8px;
+    padding: 1.2rem;
+  }
+  .stats-card-titulo {
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--texto-sub);
+    margin-bottom: 1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+  }
+  .grafico-barras { display: flex; flex-direction: column; gap: 0.4rem; }
+  .barra-linha {
+    display: grid;
+    grid-template-columns: 80px 1fr 40px;
+    gap: 0.5rem;
+    align-items: center;
+    font-size: 0.78rem;
+  }
+  .barra-label { color: var(--texto-sub); text-align: right; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .barra-track { background: var(--cinza-claro); border-radius: 2px; height: 8px; overflow: hidden; }
+  .barra-fill { height: 100%; border-radius: 2px; transition: width 0.6s ease; }
+  .barra-batismo { background: var(--batismo); }
+  .barra-casamento { background: var(--casamento); }
+  .barra-obito { background: var(--obito); }
+  .barra-valor { color: var(--texto); font-weight: 500; font-size: 0.75rem; }
+
   /* ── Pesquisa ── */
-  main { max-width: 1000px; margin: 0 auto; padding: 2rem 1.5rem 4rem; }
+  #vistaPesquisa {}
 
   .painel-pesquisa {
-    background: var(--fundo-card);
+    background: var(--branco);
     border: 1px solid var(--linha);
-    border-radius: 2px;
-    padding: 1.5rem;
-    margin-bottom: 2rem;
-    box-shadow: 0 2px 12px rgba(28,24,20,0.06);
+    border-radius: 8px;
+    padding: 1.2rem;
+    margin-bottom: 1rem;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.04);
   }
 
   .campo-principal {
@@ -116,334 +201,480 @@
   }
   .campo-principal input {
     flex: 1;
-    padding: 0.75rem 1rem;
-    font-family: 'EB Garamond', serif;
-    font-size: 1.1rem;
+    padding: 0.65rem 1rem;
+    font-family: 'Inter', sans-serif;
+    font-size: 0.95rem;
     border: 1.5px solid var(--linha);
-    background: var(--sépia);
-    color: var(--tinta);
-    border-radius: 2px;
+    background: var(--bg);
+    color: var(--texto);
+    border-radius: 6px;
     outline: none;
     transition: border-color 0.2s;
   }
-  .campo-principal input:focus { border-color: var(--ouro); }
-  .campo-principal input::placeholder { color: var(--tinta-clara); font-style: italic; }
+  .campo-principal input:focus { border-color: var(--azul-medio); background: var(--branco); }
+  .campo-principal input::placeholder { color: var(--cinza); }
 
+  .btns-pesquisa { display: flex; gap: 0.4rem; }
   .btn-pesquisar {
-    padding: 0.75rem 1.5rem;
-    background: var(--tinta);
-    color: var(--sépia);
+    padding: 0.65rem 1.1rem;
+    background: var(--azul-escuro);
+    color: var(--branco);
     border: none;
-    font-size: 0.85rem;
-    font-weight: 400;
-    letter-spacing: 0.05em;
+    font-family: 'Inter', sans-serif;
+    font-size: 0.82rem;
+    font-weight: 500;
     cursor: pointer;
-    border-radius: 2px;
-    transition: background 0.2s;
+    border-radius: 6px;
+    transition: background 0.15s;
     white-space: nowrap;
   }
-  .btn-pesquisar:hover { background: var(--ouro); }
-
+  .btn-pesquisar:hover { background: var(--azul-medio); }
   .btn-ia {
-    background: var(--ouro);
-    color: var(--tinta);
+    background: var(--laranja);
+    color: var(--branco);
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
   }
-  .btn-ia:hover { background: var(--ouro-claro); }
+  .btn-ia:hover { background: #e8623a; }
+  .btn-ia svg { width: 13px; height: 13px; }
 
   .filtros {
     display: flex;
     flex-wrap: wrap;
-    gap: 0.75rem;
+    gap: 0.6rem;
     align-items: flex-end;
   }
-  .filtro-grupo { display: flex; flex-direction: column; gap: 0.3rem; }
+  .filtro-grupo { display: flex; flex-direction: column; gap: 0.25rem; }
   .filtro-grupo label {
-    font-size: 0.7rem;
-    letter-spacing: 0.08em;
+    font-size: 0.65rem;
+    font-weight: 600;
+    letter-spacing: 0.07em;
     text-transform: uppercase;
-    color: var(--tinta-clara);
+    color: var(--texto-sub);
   }
   .filtro-grupo select,
   .filtro-grupo input {
-    padding: 0.45rem 0.7rem;
-    border: 1px solid var(--linha);
-    background: var(--sépia);
-    color: var(--tinta);
-    font-size: 0.85rem;
-    border-radius: 2px;
+    padding: 0.42rem 0.65rem;
+    border: 1.5px solid var(--linha);
+    background: var(--bg);
+    color: var(--texto);
+    font-family: 'Inter', sans-serif;
+    font-size: 0.82rem;
+    border-radius: 5px;
     outline: none;
     cursor: pointer;
   }
   .filtro-grupo select:focus,
-  .filtro-grupo input:focus { border-color: var(--ouro); }
-  .filtro-anos { display: flex; gap: 0.4rem; align-items: center; }
-  .filtro-anos span { color: var(--tinta-clara); font-size: 0.8rem; }
+  .filtro-grupo input:focus { border-color: var(--azul-medio); }
+  .filtro-anos { display: flex; gap: 0.3rem; align-items: center; }
+  .filtro-anos span { color: var(--cinza); font-size: 0.8rem; }
   .filtro-anos input { width: 5.5rem; }
 
   .btn-limpar {
-    padding: 0.45rem 0.9rem;
+    padding: 0.42rem 0.8rem;
     background: none;
-    border: 1px solid var(--linha);
-    color: var(--tinta-clara);
-    font-size: 0.8rem;
+    border: 1.5px solid var(--linha);
+    color: var(--texto-sub);
+    font-family: 'Inter', sans-serif;
+    font-size: 0.78rem;
     cursor: pointer;
-    border-radius: 2px;
-    margin-top: 1.3rem;
-    transition: all 0.2s;
+    border-radius: 5px;
+    margin-top: 1.1rem;
+    transition: all 0.15s;
   }
-  .btn-limpar:hover { border-color: var(--tinta-clara); color: var(--tinta); }
+  .btn-limpar:hover { border-color: var(--azul-medio); color: var(--texto); }
 
-  /* ── Resultados ── */
+  /* ── Interpretação IA ── */
+  .ia-interpretacao {
+    display: none;
+    background: rgba(244,121,74,0.06);
+    border: 1px solid var(--laranja-soft);
+    border-radius: 6px;
+    padding: 0.6rem 0.9rem;
+    margin-bottom: 1rem;
+    font-size: 0.8rem;
+    color: var(--texto-sub);
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+  }
+  .ia-interpretacao.visivel { display: flex; }
+  .ia-chip {
+    background: var(--branco);
+    border: 1px solid var(--laranja-soft);
+    border-radius: 4px;
+    padding: 0.15rem 0.45rem;
+    font-size: 0.75rem;
+    color: var(--texto);
+  }
+  .ia-chip span { color: var(--texto-sub); margin-right: 0.2rem; }
+  .ia-fallback { color: var(--cinza); font-size: 0.72rem; font-style: italic; }
+
+  /* ── Info resultados ── */
   .info-resultados {
-    display: flex;
+    display: none;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 1rem;
-    color: var(--tinta-clara);
-    font-size: 0.85rem;
+    margin-bottom: 0.75rem;
+    color: var(--texto-sub);
+    font-size: 0.8rem;
   }
 
-  .lista-resultados { display: flex; flex-direction: column; gap: 0.5rem; }
+  /* ── Cards de resultados ── */
+  .lista-resultados { display: flex; flex-direction: column; gap: 0.4rem; }
 
   .card {
-    background: var(--fundo-card);
+    background: var(--branco);
     border: 1px solid var(--linha);
     border-left: 3px solid var(--linha);
-    border-radius: 2px;
-    padding: 1rem 1.2rem;
+    border-radius: 6px;
+    padding: 0.85rem 1rem;
     cursor: pointer;
-    transition: all 0.15s;
+    transition: all 0.12s;
     display: grid;
     grid-template-columns: auto 1fr auto;
-    gap: 0.5rem 1rem;
-    align-items: start;
+    gap: 0.4rem 0.9rem;
+    align-items: center;
   }
   .card:hover {
-    border-left-color: var(--ouro);
-    box-shadow: 0 2px 8px rgba(28,24,20,0.08);
+    border-left-color: var(--laranja);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06);
     transform: translateX(2px);
   }
-  .card[data-tipo="batismo"] { border-left-color: var(--batismo); }
+  .card[data-tipo="batismo"]  { border-left-color: var(--batismo); }
   .card[data-tipo="casamento"] { border-left-color: var(--casamento); }
-  .card[data-tipo="obito"] { border-left-color: var(--obito); }
+  .card[data-tipo="obito"]    { border-left-color: var(--obito); }
 
   .badge {
-    font-size: 0.65rem;
-    font-weight: 500;
-    letter-spacing: 0.08em;
+    font-size: 0.62rem;
+    font-weight: 600;
+    letter-spacing: 0.07em;
     text-transform: uppercase;
-    padding: 0.2rem 0.5rem;
-    border-radius: 1px;
+    padding: 0.18rem 0.45rem;
+    border-radius: 3px;
     white-space: nowrap;
-    margin-top: 0.1rem;
+    align-self: start;
+    margin-top: 2px;
   }
-  .badge-batismo  { background: #dce8f0; color: var(--batismo); }
-  .badge-casamento { background: #ecdcf0; color: var(--casamento); }
-  .badge-obito    { background: #f0dcdc; color: var(--obito); }
+  .badge-batismo   { background: #dce8f0; color: #2a4a6a; }
+  .badge-casamento { background: #ecdcf0; color: #5a3a6a; }
+  .badge-obito     { background: #f0dcd8; color: #6a2a1a; }
 
   .card-nome {
-    font-family: 'EB Garamond', serif;
-    font-size: 1.15rem;
-    font-weight: 500;
-    line-height: 1.2;
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: var(--texto);
+    line-height: 1.3;
   }
   .card-detalhe {
-    font-size: 0.8rem;
-    color: var(--tinta-clara);
-    margin-top: 0.2rem;
+    font-size: 0.75rem;
+    color: var(--texto-sub);
+    margin-top: 0.15rem;
   }
   .card-ano {
-    font-family: 'EB Garamond', serif;
-    font-size: 1.1rem;
-    color: var(--ouro);
-    text-align: right;
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--azul-medio);
     white-space: nowrap;
+    text-align: right;
   }
 
   /* ── Paginação ── */
   .paginacao {
     display: flex;
     justify-content: center;
-    gap: 0.4rem;
-    margin-top: 2rem;
+    gap: 0.3rem;
+    margin-top: 1.5rem;
   }
   .btn-pag {
-    padding: 0.4rem 0.8rem;
-    border: 1px solid var(--linha);
-    background: var(--fundo-card);
-    color: var(--tinta);
+    padding: 0.35rem 0.7rem;
+    border: 1.5px solid var(--linha);
+    background: var(--branco);
+    color: var(--texto);
     cursor: pointer;
-    font-size: 0.85rem;
-    border-radius: 2px;
-    transition: all 0.15s;
+    font-family: 'Inter', sans-serif;
+    font-size: 0.82rem;
+    border-radius: 5px;
+    transition: all 0.12s;
   }
-  .btn-pag:hover { border-color: var(--ouro); color: var(--ouro); }
-  .btn-pag.ativo { background: var(--tinta); color: var(--sépia); border-color: var(--tinta); }
+  .btn-pag:hover { border-color: var(--azul-medio); color: var(--azul-medio); }
+  .btn-pag.ativo { background: var(--azul-escuro); color: var(--branco); border-color: var(--azul-escuro); }
   .btn-pag:disabled { opacity: 0.35; cursor: default; }
 
-  /* ── Modal de detalhe ── */
+  /* ── Modal ── */
   .overlay {
     display: none;
     position: fixed; inset: 0;
-    background: rgba(28,24,20,0.6);
+    background: rgba(27,31,43,0.55);
     z-index: 100;
     align-items: center;
     justify-content: center;
     padding: 1rem;
+    backdrop-filter: blur(2px);
   }
   .overlay.aberto { display: flex; }
 
   .modal {
-    background: var(--fundo-card);
-    border: 1px solid var(--linha);
-    border-top: 3px solid var(--ouro);
-    border-radius: 2px;
+    background: var(--branco);
+    border-radius: 10px;
     max-width: 680px;
     width: 100%;
-    max-height: 85vh;
+    max-height: 88vh;
     overflow-y: auto;
-    padding: 2rem;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.18);
     position: relative;
   }
-  .modal-fechar {
-    position: absolute;
-    top: 1rem; right: 1rem;
-    background: none; border: none;
-    font-size: 1.3rem;
-    cursor: pointer;
-    color: var(--tinta-clara);
-    line-height: 1;
+  .modal-header {
+    padding: 1.2rem 1.4rem;
+    border-bottom: 1px solid var(--linha);
+    display: flex;
+    align-items: flex-start;
+    gap: 0.8rem;
+    position: sticky;
+    top: 0;
+    background: var(--branco);
+    border-radius: 10px 10px 0 0;
   }
-  .modal-tipo {
-    font-size: 0.7rem;
-    letter-spacing: 0.1em;
+  .modal-header-info { flex: 1; }
+  .modal-tipo-badge {
+    font-size: 0.62rem;
+    font-weight: 600;
+    letter-spacing: 0.08em;
     text-transform: uppercase;
-    color: var(--tinta-clara);
     margin-bottom: 0.3rem;
   }
   .modal-titulo {
-    font-family: 'EB Garamond', serif;
-    font-size: 1.7rem;
-    font-weight: 500;
+    font-size: 1.15rem;
+    font-weight: 700;
+    color: var(--texto);
+    line-height: 1.25;
+  }
+  .modal-fechar {
+    background: var(--bg);
+    border: none;
+    width: 28px; height: 28px;
+    border-radius: 6px;
+    cursor: pointer;
+    color: var(--texto-sub);
+    font-size: 1rem;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+    transition: background 0.15s;
+  }
+  .modal-fechar:hover { background: var(--cinza-claro); color: var(--texto); }
+
+  .modal-corpo { padding: 1.2rem 1.4rem; }
+
+  .modal-secao {
     margin-bottom: 1.2rem;
-    padding-bottom: 1rem;
+  }
+  .modal-secao-titulo {
+    font-size: 0.65rem;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--laranja);
+    margin-bottom: 0.6rem;
+    padding-bottom: 0.4rem;
     border-bottom: 1px solid var(--linha);
   }
   .modal-grid {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 0.8rem 1.5rem;
+    gap: 0.7rem 1.2rem;
   }
   .modal-campo { display: flex; flex-direction: column; gap: 0.15rem; }
   .modal-campo.largo { grid-column: 1 / -1; }
   .modal-campo label {
-    font-size: 0.68rem;
-    letter-spacing: 0.08em;
+    font-size: 0.65rem;
+    font-weight: 600;
+    letter-spacing: 0.06em;
     text-transform: uppercase;
-    color: var(--tinta-clara);
+    color: var(--texto-sub);
   }
   .modal-campo span {
-    font-family: 'EB Garamond', serif;
-    font-size: 1.05rem;
-    color: var(--tinta);
+    font-size: 0.88rem;
+    color: var(--texto);
+    line-height: 1.4;
   }
-  .modal-campo span.vazio { color: var(--linha); font-style: italic; font-size: 0.85rem; }
+  .modal-campo span.vazio {
+    color: var(--cinza);
+    font-style: italic;
+    font-size: 0.8rem;
+  }
 
-  /* ── Estado vazio / carregando ── */
+  /* ── Estado vazio ── */
   .estado {
     text-align: center;
     padding: 3rem 1rem;
-    color: var(--tinta-clara);
+    color: var(--texto-sub);
   }
-  .estado svg { margin-bottom: 1rem; opacity: 0.3; }
-  .estado p { font-family: 'EB Garamond', serif; font-size: 1.2rem; font-style: italic; }
+  .estado-icon { font-size: 2rem; margin-bottom: 0.7rem; opacity: 0.4; }
+  .estado p { font-size: 0.9rem; }
 
-  @media (max-width: 600px) {
-    h1 { font-size: 1.8rem; }
-    .stats-bar { gap: 1.5rem; }
+  /* ── Scrollbar ── */
+  ::-webkit-scrollbar { width: 5px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: var(--cinza); border-radius: 3px; }
+
+  @media (max-width: 640px) {
+    header { padding: 0 1rem; }
+    .container { padding: 1rem; }
+    .stats-bar { gap: 0; }
+    .stat { padding: 0.7rem 1rem; }
+    .stat-valor { font-size: 1.2rem; }
     .modal-grid { grid-template-columns: 1fr; }
     .card { grid-template-columns: auto 1fr; }
-    .card-ano { grid-column: 2; grid-row: 1; text-align: left; }
+    .card-ano { grid-column: 2; grid-row: 1; text-align: right; }
+    .btns-pesquisa { flex-wrap: wrap; }
   }
 </style>
 </head>
 <body>
 
 <header>
-  <div class="titulo-latim">In nomine Dei</div>
-  <h1>Registos Paroquiais</h1>
-  <div class="subtitulo">Arquivo de Batismos · Casamentos · Óbitos</div>
+  <div class="logo">
+    <div class="logo-icon">⛪</div>
+    <div>
+      <div class="logo-texto">Registos Paroquiais</div>
+      <div class="logo-sub">Arquivo Digital</div>
+    </div>
+  </div>
+  <nav class="header-nav">
+    <button class="btn-nav ativo" onclick="mostrarVista('pesquisa')">Pesquisa</button>
+    <button class="btn-nav" onclick="mostrarVista('estatisticas')">Estatísticas</button>
+  </nav>
 </header>
 
-<div class="stats-bar" id="statsBar">
-  <div class="stat"><div class="stat-valor" id="statBatismos">—</div><div class="stat-label">Batismos</div></div>
-  <div class="stat"><div class="stat-valor" id="statCasamentos">—</div><div class="stat-label">Casamentos</div></div>
-  <div class="stat"><div class="stat-valor" id="statObitos">—</div><div class="stat-label">Óbitos</div></div>
+<div class="stats-bar">
+  <div class="stat" onclick="filtrarTipo('batismo')" title="Ver apenas batismos">
+    <div class="stat-valor" id="statBatismos">—</div>
+    <div class="stat-label"><span class="stat-dot" style="background:#7ab0d8"></span>Batismos</div>
+  </div>
+  <div class="stat" onclick="filtrarTipo('casamento')" title="Ver apenas casamentos">
+    <div class="stat-valor" id="statCasamentos">—</div>
+    <div class="stat-label"><span class="stat-dot" style="background:#b07ad8"></span>Casamentos</div>
+  </div>
+  <div class="stat" onclick="filtrarTipo('obito')" title="Ver apenas óbitos">
+    <div class="stat-valor" id="statObitos">—</div>
+    <div class="stat-label"><span class="stat-dot" style="background:#d87a6a"></span>Óbitos</div>
+  </div>
 </div>
 
-<main>
-  <div class="painel-pesquisa">
-    <div class="campo-principal">
-      <input type="text" id="campoPesquisa" placeholder="Pesquisar por nome, pai, mãe, testemunha…" autocomplete="off">
-      <button class="btn-pesquisar" onclick="pesquisar(1)">Pesquisar</button>
-      <button class="btn-pesquisar btn-ia" onclick="pesquisarIA(1)">✦ Pesquisa IA</button>
-    </div>
-    <div class="filtros">
-      <div class="filtro-grupo">
-        <label>Tipo de registo</label>
-        <select id="filtrTipo">
-          <option value="">Todos</option>
-          <option value="batismo">Batismos</option>
-          <option value="casamento">Casamentos</option>
-          <option value="obito">Óbitos</option>
-        </select>
-      </div>
-      <div class="filtro-grupo">
-        <label>Período</label>
-        <div class="filtro-anos">
-          <input type="number" id="filtrAnoMin" placeholder="Desde" min="1500" max="2100">
-          <span>–</span>
-          <input type="number" id="filtrAnoMax" placeholder="Até" min="1500" max="2100">
+<div class="container">
+
+  <!-- Vista de pesquisa -->
+  <div id="vistaPesquisa">
+    <div class="painel-pesquisa">
+      <div class="campo-principal">
+        <input type="text" id="campoPesquisa" placeholder="Pesquisar por nome, pai, mãe, testemunha…" autocomplete="off">
+        <div class="btns-pesquisa">
+          <button class="btn-pesquisar" onclick="pesquisar(1)">Pesquisar</button>
+          <button class="btn-pesquisar btn-ia" onclick="pesquisarIA(1)">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+              <path d="M12 2l2.4 7.4H22l-6.2 4.5 2.4 7.4L12 17l-6.2 4.3 2.4-7.4L2 9.4h7.6z"/>
+            </svg>
+            Pesquisa IA
+          </button>
         </div>
       </div>
-      <div class="filtro-grupo">
-        <label>Fonte</label>
-        <select id="filtrFonte">
-          <option value="">Todas</option>
-        </select>
+      <div class="filtros">
+        <div class="filtro-grupo">
+          <label>Tipo</label>
+          <select id="filtrTipo">
+            <option value="">Todos</option>
+            <option value="batismo">Batismos</option>
+            <option value="casamento">Casamentos</option>
+            <option value="obito">Óbitos</option>
+          </select>
+        </div>
+        <div class="filtro-grupo">
+          <label>Período</label>
+          <div class="filtro-anos">
+            <input type="number" id="filtrAnoMin" placeholder="Desde" min="1500" max="2100">
+            <span>–</span>
+            <input type="number" id="filtrAnoMax" placeholder="Até" min="1500" max="2100">
+          </div>
+        </div>
+        <div class="filtro-grupo">
+          <label>Fonte</label>
+          <select id="filtrFonte">
+            <option value="">Todas</option>
+          </select>
+        </div>
+        <button class="btn-limpar" onclick="limparFiltros()">Limpar</button>
       </div>
-      <button class="btn-limpar" onclick="limparFiltros()">Limpar filtros</button>
+    </div>
+
+    <div class="ia-interpretacao" id="iaInterpretacao"></div>
+
+    <div id="infoResultados" class="info-resultados">
+      <span id="textoResultados"></span>
+    </div>
+
+    <div id="listaResultados" class="lista-resultados"></div>
+    <div id="paginacao" class="paginacao"></div>
+  </div>
+
+  <!-- Vista de estatísticas -->
+  <div id="vistaEstatisticas">
+    <div class="stats-grid">
+      <div class="stats-card">
+        <div class="stats-card-titulo">
+          <span class="stat-dot" style="background:var(--batismo)"></span>
+          Batismos por década
+        </div>
+        <div class="grafico-barras" id="grafBatismos"></div>
+      </div>
+      <div class="stats-card">
+        <div class="stats-card-titulo">
+          <span class="stat-dot" style="background:var(--casamento)"></span>
+          Casamentos por década
+        </div>
+        <div class="grafico-barras" id="grafCasamentos"></div>
+      </div>
+      <div class="stats-card">
+        <div class="stats-card-titulo">
+          <span class="stat-dot" style="background:var(--obito)"></span>
+          Óbitos por década
+        </div>
+        <div class="grafico-barras" id="grafObitos"></div>
+      </div>
+      <div class="stats-card">
+        <div class="stats-card-titulo">
+          📊 Totais por tipo
+        </div>
+        <div id="grafTotais"></div>
+      </div>
     </div>
   </div>
 
-  <div id="infoResultados" class="info-resultados" style="display:none">
-    <span id="textoResultados"></span>
-  </div>
-
-  <div id="listaResultados" class="lista-resultados"></div>
-  <div id="paginacao" class="paginacao"></div>
-</main>
+</div>
 
 <!-- Modal de detalhe -->
 <div class="overlay" id="overlay" onclick="fecharModal(event)">
   <div class="modal" id="modal">
-    <button class="modal-fechar" onclick="fecharModal()">✕</button>
-    <div class="modal-tipo" id="modalTipo"></div>
-    <div class="modal-titulo" id="modalTitulo"></div>
-    <div class="modal-grid" id="modalGrid"></div>
+    <div class="modal-header">
+      <div class="modal-header-info">
+        <div class="modal-tipo-badge" id="modalTipoBadge"></div>
+        <div class="modal-titulo" id="modalTitulo"></div>
+      </div>
+      <button class="modal-fechar" onclick="fecharModal()">✕</button>
+    </div>
+    <div class="modal-corpo" id="modalCorpo"></div>
   </div>
 </div>
 
 <script>
-const API = '';  // mesmo servidor
+const API = '';
 let paginaAtual = 1;
+let dadosEstatisticas = null;
 
-// ── Inicialização ────────────────────────────────────────────────────────────
+// ── Init ──────────────────────────────────────────────────────────────────────
 
 async function init() {
-  await carregarEstatisticas();
-  await carregarFontes();
-
+  await Promise.all([carregarEstatisticas(), carregarFontes()]);
   document.getElementById('campoPesquisa').addEventListener('keydown', e => {
     if (e.key === 'Enter') pesquisar(1);
   });
@@ -452,13 +683,11 @@ async function init() {
 async function carregarEstatisticas() {
   try {
     const r = await fetch(`${API}/api/estatisticas`);
-    const d = await r.json();
-    document.getElementById('statBatismos').textContent =
-      (d.batismos.total || 0).toLocaleString('pt-PT');
-    document.getElementById('statCasamentos').textContent =
-      (d.casamentos.total || 0).toLocaleString('pt-PT');
-    document.getElementById('statObitos').textContent =
-      (d.obitos.total || 0).toLocaleString('pt-PT');
+    dadosEstatisticas = await r.json();
+    const fmt = n => (n || 0).toLocaleString('pt-PT');
+    document.getElementById('statBatismos').textContent   = fmt(dadosEstatisticas.batismos.total);
+    document.getElementById('statCasamentos').textContent = fmt(dadosEstatisticas.casamentos.total);
+    document.getElementById('statObitos').textContent     = fmt(dadosEstatisticas.obitos.total);
   } catch(e) {}
 }
 
@@ -475,15 +704,103 @@ async function carregarFontes() {
   } catch(e) {}
 }
 
-// ── Pesquisa ─────────────────────────────────────────────────────────────────
+// ── Navegação entre vistas ────────────────────────────────────────────────────
+
+function mostrarVista(vista) {
+  document.getElementById('vistaPesquisa').style.display      = vista === 'pesquisa' ? '' : 'none';
+  document.getElementById('vistaEstatisticas').style.display  = vista === 'estatisticas' ? '' : 'none';
+  document.querySelectorAll('.btn-nav').forEach((b, i) => {
+    b.classList.toggle('ativo', (i === 0) === (vista === 'pesquisa'));
+  });
+  if (vista === 'estatisticas') carregarGraficos();
+}
+
+function filtrarTipo(tipo) {
+  mostrarVista('pesquisa');
+  document.getElementById('filtrTipo').value = tipo;
+  pesquisar(1);
+}
+
+// ── Gráficos de estatísticas ──────────────────────────────────────────────────
+
+async function carregarGraficos() {
+  try {
+    const r = await fetch(`${API}/api/estatisticas-detalhadas`);
+    if (!r.ok) {
+      // Fallback: mostrar mensagem
+      ['grafBatismos','grafCasamentos','grafObitos'].forEach(id => {
+        document.getElementById(id).innerHTML =
+          '<p style="color:var(--texto-sub);font-size:0.8rem;padding:0.5rem 0">Sem dados suficientes</p>';
+      });
+      renderTotais();
+      return;
+    }
+    const dados = await r.json();
+    renderGrafico('grafBatismos', dados.batismos_por_decada, 'barra-batismo');
+    renderGrafico('grafCasamentos', dados.casamentos_por_decada, 'barra-casamento');
+    renderGrafico('grafObitos', dados.obitos_por_decada, 'barra-obito');
+    renderTotais();
+  } catch(e) {
+    renderTotais();
+  }
+}
+
+function renderGrafico(containerId, dados, classeBarrra) {
+  const cont = document.getElementById(containerId);
+  if (!dados || dados.length === 0) {
+    cont.innerHTML = '<p style="color:var(--texto-sub);font-size:0.8rem;padding:0.5rem 0">Sem dados</p>';
+    return;
+  }
+  const max = Math.max(...dados.map(d => d.total));
+  cont.innerHTML = dados.map(d => `
+    <div class="barra-linha">
+      <div class="barra-label">${d.decada}s</div>
+      <div class="barra-track">
+        <div class="barra-fill ${classeBarrra}" style="width:${max ? (d.total/max*100) : 0}%"></div>
+      </div>
+      <div class="barra-valor">${d.total.toLocaleString('pt-PT')}</div>
+    </div>
+  `).join('');
+}
+
+function renderTotais() {
+  if (!dadosEstatisticas) return;
+  const cont = document.getElementById('grafTotais');
+  const tipos = [
+    { label: 'Batismos', dados: dadosEstatisticas.batismos, cor: 'var(--batismo)' },
+    { label: 'Casamentos', dados: dadosEstatisticas.casamentos, cor: 'var(--casamento)' },
+    { label: 'Óbitos', dados: dadosEstatisticas.obitos, cor: 'var(--obito)' },
+  ];
+  const total = tipos.reduce((s, t) => s + (t.dados.total || 0), 0);
+  cont.innerHTML = tipos.map(t => {
+    const pct = total ? Math.round((t.dados.total || 0) / total * 100) : 0;
+    const periodo = t.dados.ano_min && t.dados.ano_max
+      ? `${t.dados.ano_min} – ${t.dados.ano_max}` : '—';
+    return `
+      <div style="margin-bottom:1rem">
+        <div style="display:flex;justify-content:space-between;margin-bottom:0.3rem">
+          <span style="font-size:0.82rem;font-weight:500">${t.label}</span>
+          <span style="font-size:0.82rem;font-weight:700;color:${t.cor}">${(t.dados.total||0).toLocaleString('pt-PT')}</span>
+        </div>
+        <div class="barra-track" style="height:10px;margin-bottom:0.2rem">
+          <div class="barra-fill" style="background:${t.cor};width:${pct}%"></div>
+        </div>
+        <div style="font-size:0.7rem;color:var(--texto-sub)">${pct}% · ${periodo}</div>
+      </div>
+    `;
+  }).join('');
+}
+
+// ── Pesquisa normal ───────────────────────────────────────────────────────────
 
 async function pesquisar(pagina) {
   paginaAtual = pagina;
-  const q = document.getElementById('campoPesquisa').value.trim();
-  const tipo = document.getElementById('filtrTipo').value;
-  const anoMin = document.getElementById('filtrAnoMin').value;
-  const anoMax = document.getElementById('filtrAnoMax').value;
-  const fonte = document.getElementById('filtrFonte').value;
+  esconderInterpretacao();
+  const q       = document.getElementById('campoPesquisa').value.trim();
+  const tipo    = document.getElementById('filtrTipo').value;
+  const anoMin  = document.getElementById('filtrAnoMin').value;
+  const anoMax  = document.getElementById('filtrAnoMax').value;
+  const fonte   = document.getElementById('filtrFonte').value;
 
   const params = new URLSearchParams({ pagina, por_pagina: 25 });
   if (q) params.set('q', q);
@@ -493,65 +810,74 @@ async function pesquisar(pagina) {
   if (fonte) params.set('fonte', fonte);
 
   mostrarCarregando();
-
   try {
     const r = await fetch(`${API}/api/pesquisar?${params}`);
     const d = await r.json();
     renderResultados(d, q);
   } catch(e) {
     document.getElementById('listaResultados').innerHTML =
-      `<div class="estado"><p>Erro ao contactar o servidor.</p></div>`;
+      `<div class="estado"><div class="estado-icon">⚠</div><p>Erro ao contactar o servidor.</p></div>`;
   }
 }
 
+// ── Pesquisa IA ───────────────────────────────────────────────────────────────
+
 async function pesquisarIA(pagina) {
-    const q = document.getElementById('campoPesquisa').value.trim();
-    if (!q) {
-        alert('Escreve uma pesquisa em linguagem natural.\nEx: "joão filho de pedro silva"');
-        return;
+  const q = document.getElementById('campoPesquisa').value.trim();
+  if (!q) {
+    document.getElementById('campoPesquisa').focus();
+    return;
+  }
+  paginaAtual = pagina;
+  mostrarCarregando();
+  esconderInterpretacao();
+
+  try {
+    const params = new URLSearchParams({ q, pagina, por_pagina: 25 });
+    const r = await fetch(`${API}/api/pesquisar-ia?${params}`);
+    const d = await r.json();
+    if (!r.ok) {
+      document.getElementById('listaResultados').innerHTML =
+        `<div class="estado"><div class="estado-icon">⚠</div><p>${d.detail || 'Erro na pesquisa IA.'}</p></div>`;
+      return;
     }
-
-    paginaAtual = pagina;
-    mostrarCarregando();
-
-    try {
-        const params = new URLSearchParams({ q, pagina, por_pagina: 25 });
-        const r = await fetch(`${API}/api/pesquisar-ia?${params}`);
-        const d = await r.json();
-
-        if (!r.ok) {
-            document.getElementById('listaResultados').innerHTML =
-                `<div class="estado"><p>${d.detail || 'Erro na pesquisa IA.'}</p></div>`;
-            return;
-        }
-
-        // Mostrar interpretação
-        if (d.interpretacao) {
-            const etiquetas = {
-                nome: 'Nome', pai: 'Pai', mae: 'Mãe',
-                noivo: 'Noivo', noiva: 'Noiva', testemunha: 'Testemunha',
-                local: 'Local', tipo: 'Tipo', fonte: 'Fonte',
-                ano_min: 'Ano desde', ano_max: 'Ano até'
-            };
-            const partes = Object.entries(d.interpretacao)
-                .map(([k, v]) => `<span style="background:rgba(196,154,42,0.15);padding:0.15rem 0.4rem;border-radius:2px;font-size:0.8rem"><span style="color:var(--tinta-clara)">${etiquetas[k] || k}:</span> ${v}</span>`)
-                .join(' ');
-
-            const info = document.getElementById('infoResultados');
-            info.style.display = 'flex';
-            info.style.flexDirection = 'column';
-            info.style.gap = '0.4rem';
-            document.getElementById('textoResultados').innerHTML =
-                `<div>✦ Interpretado como: ${partes}</div>`;
-        }
-
-        renderResultados(d, '');
-    } catch(e) {
-        document.getElementById('listaResultados').innerHTML =
-            `<div class="estado"><p>Erro ao contactar o servidor.</p></div>`;
-    }
+    mostrarInterpretacao(d.interpretacao, d.usou_ia);
+    renderResultados(d, '');
+  } catch(e) {
+    document.getElementById('listaResultados').innerHTML =
+      `<div class="estado"><div class="estado-icon">⚠</div><p>Erro ao contactar o servidor.</p></div>`;
+  }
 }
-  
+
+function mostrarInterpretacao(filtros, usouIA) {
+  if (!filtros || Object.keys(filtros).length === 0) return;
+  const etiquetas = {
+    nome:'Nome', pai:'Pai', mae:'Mãe', noivo:'Noivo', noiva:'Noiva',
+    testemunha:'Testemunha', local:'Local', tipo:'Tipo',
+    fonte:'Fonte', ano_min:'Desde', ano_max:'Até'
+  };
+  const chips = Object.entries(filtros)
+    .map(([k,v]) => `<span class="ia-chip"><span>${etiquetas[k]||k}:</span>${v}</span>`)
+    .join('');
+
+  const modo = usouIA
+    ? '<span style="color:var(--laranja);font-weight:600">✦ IA</span> interpretou:'
+    : '<span style="color:var(--texto-sub)">Padrões</span> interpretaram:';
+
+  const el = document.getElementById('iaInterpretacao');
+  el.innerHTML = `${modo} ${chips}`;
+  if (!usouIA) el.innerHTML += `<span class="ia-fallback">(API IA indisponível)</span>`;
+  el.classList.add('visivel');
+}
+
+function esconderInterpretacao() {
+  const el = document.getElementById('iaInterpretacao');
+  el.classList.remove('visivel');
+  el.innerHTML = '';
+}
+
+// ── Render resultados ─────────────────────────────────────────────────────────
+
 function mostrarCarregando() {
   document.getElementById('infoResultados').style.display = 'none';
   document.getElementById('listaResultados').innerHTML =
@@ -561,12 +887,10 @@ function mostrarCarregando() {
 
 function renderResultados(d, q) {
   const lista = document.getElementById('listaResultados');
-  const info = document.getElementById('infoResultados');
+  const info  = document.getElementById('infoResultados');
 
   if (d.total === 0) {
-    lista.innerHTML = `<div class="estado">
-      <p>Nenhum registo encontrado${q ? ` para "${q}"` : ''}.</p>
-    </div>`;
+    lista.innerHTML = `<div class="estado"><div class="estado-icon">🔍</div><p>Nenhum registo encontrado${q ? ` para "<strong>${q}</strong>"` : ''}.</p></div>`;
     info.style.display = 'none';
     document.getElementById('paginacao').innerHTML = '';
     return;
@@ -574,9 +898,9 @@ function renderResultados(d, q) {
 
   info.style.display = 'flex';
   const inicio = (d.pagina - 1) * d.por_pagina + 1;
-  const fim = Math.min(d.pagina * d.por_pagina, d.total);
+  const fim    = Math.min(d.pagina * d.por_pagina, d.total);
   document.getElementById('textoResultados').textContent =
-    `A mostrar ${inicio}–${fim} de ${d.total.toLocaleString('pt-PT')} registos`;
+    `${inicio}–${fim} de ${d.total.toLocaleString('pt-PT')} registos`;
 
   lista.innerHTML = '';
   d.resultados.forEach(reg => {
@@ -584,13 +908,13 @@ function renderResultados(d, q) {
     card.className = 'card';
     card.dataset.tipo = reg.tipo;
 
-    const tipoLabel = { batismo: 'Batismo', casamento: 'Casamento', obito: 'Óbito' }[reg.tipo];
-    const detalhes = [];
-    if (reg.data) detalhes.push(reg.data);
+    const tipoLabel = { batismo:'Batismo', casamento:'Casamento', obito:'Óbito' }[reg.tipo];
+    const detalhes  = [];
+    if (reg.data)  detalhes.push(reg.data);
     if (reg.local) detalhes.push(reg.local);
     if (reg.pai || reg.mae) {
       const pais = [reg.pai, reg.mae].filter(Boolean).join(' & ');
-      detalhes.push(`Fil. de ${pais}`);
+      detalhes.push(`Fil. ${pais}`);
     }
 
     card.innerHTML = `
@@ -611,8 +935,8 @@ function renderResultados(d, q) {
 function destacar(texto, q) {
   if (!q || !texto) return texto;
   const termos = q.trim().split(/\s+/).map(t => t.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'));
-  const regex = new RegExp(`(${termos.join('|')})`, 'gi');
-  return texto.replace(regex, '<mark style="background:#f0e68c;padding:0 1px">$1</mark>');
+  return texto.replace(new RegExp(`(${termos.join('|')})`, 'gi'),
+    '<mark style="background:#fde8a0;padding:0 1px;border-radius:2px">$1</mark>');
 }
 
 // ── Paginação ─────────────────────────────────────────────────────────────────
@@ -620,105 +944,110 @@ function destacar(texto, q) {
 function renderPaginacao(d) {
   const cont = document.getElementById('paginacao');
   if (d.paginas <= 1) { cont.innerHTML = ''; return; }
-
-  const paginas = [];
-  const atual = d.pagina;
-  const total = d.paginas;
-
-  paginas.push(1);
+  const atual = d.pagina, total = d.paginas;
+  const paginas = [1];
   if (atual > 3) paginas.push('...');
-  for (let p = Math.max(2, atual - 1); p <= Math.min(total - 1, atual + 1); p++)
-    paginas.push(p);
-  if (atual < total - 2) paginas.push('...');
+  for (let p = Math.max(2, atual-1); p <= Math.min(total-1, atual+1); p++) paginas.push(p);
+  if (atual < total-2) paginas.push('...');
   if (total > 1) paginas.push(total);
 
-  cont.innerHTML = paginas.map(p => {
-    if (p === '...') return `<span style="padding:0.4rem 0.4rem;color:var(--tinta-clara)">…</span>`;
-    return `<button class="btn-pag ${p === atual ? 'ativo' : ''}"
-      onclick="pesquisar(${p})">${p}</button>`;
-  }).join('');
+  cont.innerHTML = paginas.map(p =>
+    p === '...'
+      ? `<span style="padding:0.35rem 0.3rem;color:var(--cinza)">…</span>`
+      : `<button class="btn-pag ${p===atual?'ativo':''}" onclick="pesquisar(${p})">${p}</button>`
+  ).join('');
 }
 
 // ── Modal de detalhe ──────────────────────────────────────────────────────────
 
-const CAMPOS = {
+const SECOES = {
   batismo: [
-    { campo: 'ano', label: 'Ano' },
-    { campo: 'data_nasc', label: 'Data de nascimento' },
-    { campo: 'local_nascimento', label: 'Local de nascimento' },
-    { campo: 'nr_ordem', label: 'Nº de ordem' },
-    { campo: 'fls', label: 'Fólios' },
-    { campo: 'fonte', label: 'Fonte' },
-    { campo: 'pai', label: 'Pai' },
-    { campo: 'mae', label: 'Mãe' },
-    { campo: 'avo_paterno', label: 'Avô paterno' },
-    { campo: 'avo_paterna', label: 'Avó paterna' },
-    { campo: 'avo_materno', label: 'Avô materno' },
-    { campo: 'avo_materna', label: 'Avó materna' },
-    { campo: 'notas', label: 'Notas', largo: true },
+    { titulo: 'Identificação', campos: [
+      {c:'nome',l:'Nome'},{c:'data_nasc',l:'Data de nascimento'},
+      {c:'local_nascimento',l:'Local de nascimento'},{c:'ano',l:'Ano'},
+      {c:'nr_ordem',l:'Nº de ordem'},{c:'fls',l:'Fólios'},{c:'fonte',l:'Fonte',largo:true},
+    ]},
+    { titulo: 'Filiação', campos: [
+      {c:'pai',l:'Pai'},{c:'mae',l:'Mãe'},
+      {c:'avo_paterno',l:'Avô paterno'},{c:'avo_paterna',l:'Avó paterna'},
+      {c:'avo_materno',l:'Avô materno'},{c:'avo_materna',l:'Avó materna'},
+    ]},
+    { titulo: 'Notas', campos: [{c:'notas',l:'Notas',largo:true}] },
   ],
   casamento: [
-    { campo: 'ano', label: 'Ano' },
-    { campo: 'data', label: 'Data' },
-    { campo: 'local', label: 'Local' },
-    { campo: 'nr_ordem', label: 'Nº de ordem' },
-    { campo: 'fls', label: 'Fólios' },
-    { campo: 'fonte', label: 'Fonte' },
-    { campo: 'noivo', label: 'Noivo' },
-    { campo: 'idade_dnasc_noivo', label: 'Idade / D. Nasc. (noivo)' },
-    { campo: 'nat_noivo', label: 'Naturalidade (noivo)' },
-    { campo: 'noiva', label: 'Noiva' },
-    { campo: 'idade_dnasc_noiva', label: 'Idade / D. Nasc. (noiva)' },
-    { campo: 'nat_noiva', label: 'Naturalidade (noiva)' },
-    { campo: 'pai_noivo', label: 'Pai do noivo' },
-    { campo: 'nat_pai_noivo', label: 'Naturalidade (pai do noivo)' },
-    { campo: 'mae_noivo', label: 'Mãe do noivo' },
-    { campo: 'nat_mae_noivo', label: 'Naturalidade (mãe do noivo)' },
-    { campo: 'pai_noiva', label: 'Pai da noiva' },
-    { campo: 'nat_pai_noiva', label: 'Naturalidade (pai da noiva)' },
-    { campo: 'mae_noiva', label: 'Mãe da noiva' },
-    { campo: 'nat_mae_noiva', label: 'Naturalidade (mãe da noiva)' },
-    { campo: 'testemunha1', label: 'Testemunha 1' },
-    { campo: 'testemunha2', label: 'Testemunha 2' },
-    { campo: 'notas', label: 'Notas', largo: true },
+    { titulo: 'Identificação', campos: [
+      {c:'data',l:'Data'},{c:'local',l:'Local'},{c:'ano',l:'Ano'},
+      {c:'nr_ordem',l:'Nº de ordem'},{c:'fls',l:'Fólios'},{c:'fonte',l:'Fonte',largo:true},
+    ]},
+    { titulo: 'Noivo', campos: [
+      {c:'noivo',l:'Nome'},{c:'idade_dnasc_noivo',l:'Idade / D. Nasc.'},
+      {c:'nat_noivo',l:'Naturalidade'},
+      {c:'pai_noivo',l:'Pai'},{c:'nat_pai_noivo',l:'Nat. pai'},
+      {c:'mae_noivo',l:'Mãe'},{c:'nat_mae_noivo',l:'Nat. mãe'},
+    ]},
+    { titulo: 'Noiva', campos: [
+      {c:'noiva',l:'Nome'},{c:'idade_dnasc_noiva',l:'Idade / D. Nasc.'},
+      {c:'nat_noiva',l:'Naturalidade'},
+      {c:'pai_noiva',l:'Pai'},{c:'nat_pai_noiva',l:'Nat. pai'},
+      {c:'mae_noiva',l:'Mãe'},{c:'nat_mae_noiva',l:'Nat. mãe'},
+    ]},
+    { titulo: 'Testemunhas & Notas', campos: [
+      {c:'testemunha1',l:'Testemunha 1'},{c:'testemunha2',l:'Testemunha 2'},
+      {c:'notas',l:'Notas',largo:true},
+    ]},
   ],
   obito: [
-    { campo: 'ano', label: 'Ano' },
-    { campo: 'data_obito', label: 'Data de óbito' },
-    { campo: 'local', label: 'Local' },
-    { campo: 'nr_ordem', label: 'Nº de ordem' },
-    { campo: 'fls', label: 'Fólios' },
-    { campo: 'fonte', label: 'Fonte' },
-    { campo: 'pai', label: 'Pai' },
-    { campo: 'mae', label: 'Mãe' },
-    { campo: 'notas', label: 'Notas', largo: true },
+    { titulo: 'Identificação', campos: [
+      {c:'nome',l:'Nome'},{c:'data_obito',l:'Data de óbito'},
+      {c:'local',l:'Local'},{c:'ano',l:'Ano'},
+      {c:'nr_ordem',l:'Nº de ordem'},{c:'fls',l:'Fólios'},{c:'fonte',l:'Fonte',largo:true},
+    ]},
+    { titulo: 'Filiação', campos: [
+      {c:'pai',l:'Pai'},{c:'mae',l:'Mãe'},
+    ]},
+    { titulo: 'Notas', campos: [{c:'notas',l:'Notas',largo:true}] },
   ],
 };
 
 async function abrirDetalhe(tipo, id) {
   try {
-    const r = await fetch(`${API}/api/registo/${tipo}/${id}`);
+    const r   = await fetch(`${API}/api/registo/${tipo}/${id}`);
     const reg = await r.json();
 
-    const tipoLabel = { batismo: 'Batismo', casamento: 'Casamento', obito: 'Óbito' }[tipo];
-    document.getElementById('modalTipo').textContent = tipoLabel;
+    const tipoLabel = { batismo:'Batismo', casamento:'Casamento', obito:'Óbito' }[tipo];
+    const badgeClass = `badge badge-${tipo}`;
+    document.getElementById('modalTipoBadge').innerHTML =
+      `<span class="${badgeClass}">${tipoLabel}</span>`;
 
-    let titulo = '';
-    if (tipo === 'casamento') titulo = `${reg.noivo || '—'} & ${reg.noiva || '—'}`;
-    else titulo = reg.nome || '—';
+    let titulo = tipo === 'casamento'
+      ? `${reg.noivo||'—'} & ${reg.noiva||'—'}`
+      : (reg.nome || '—');
     if (reg.ano) titulo += ` · ${reg.ano}`;
     document.getElementById('modalTitulo').textContent = titulo;
 
-    const grid = document.getElementById('modalGrid');
-    grid.innerHTML = '';
+    const corpo = document.getElementById('modalCorpo');
+    corpo.innerHTML = '';
 
-    (CAMPOS[tipo] || []).forEach(({ campo, label, largo }) => {
-      const val = reg[campo];
-      if (!val && val !== 0) return;
-      const div = document.createElement('div');
-      div.className = `modal-campo${largo ? ' largo' : ''}`;
-      div.innerHTML = `<label>${label}</label><span>${val}</span>`;
-      grid.appendChild(div);
+    (SECOES[tipo] || []).forEach(secao => {
+      const camposComValor = secao.campos.filter(({c}) => reg[c] && reg[c] !== 'n/d');
+      if (camposComValor.length === 0) return;
+
+      const secDiv = document.createElement('div');
+      secDiv.className = 'modal-secao';
+      secDiv.innerHTML = `<div class="modal-secao-titulo">${secao.titulo}</div>`;
+
+      const grid = document.createElement('div');
+      grid.className = 'modal-grid';
+
+      camposComValor.forEach(({c, l, largo}) => {
+        const div = document.createElement('div');
+        div.className = `modal-campo${largo ? ' largo' : ''}`;
+        div.innerHTML = `<label>${l}</label><span>${reg[c]}</span>`;
+        grid.appendChild(div);
+      });
+
+      secDiv.appendChild(grid);
+      corpo.appendChild(secDiv);
     });
 
     document.getElementById('overlay').classList.add('aberto');
@@ -737,14 +1066,12 @@ document.addEventListener('keydown', e => {
 });
 
 function limparFiltros() {
-  document.getElementById('campoPesquisa').value = '';
-  document.getElementById('filtrTipo').value = '';
-  document.getElementById('filtrAnoMin').value = '';
-  document.getElementById('filtrAnoMax').value = '';
-  document.getElementById('filtrFonte').value = '';
+  ['campoPesquisa','filtrAnoMin','filtrAnoMax'].forEach(id => document.getElementById(id).value = '');
+  ['filtrTipo','filtrFonte'].forEach(id => document.getElementById(id).value = '');
   document.getElementById('listaResultados').innerHTML = '';
   document.getElementById('infoResultados').style.display = 'none';
   document.getElementById('paginacao').innerHTML = '';
+  esconderInterpretacao();
 }
 
 init();
