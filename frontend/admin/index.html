@@ -8,23 +8,23 @@
 <link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;1,400&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
 <style>
   :root {
-    --bg:        #0f1117;
-    --bg2:       #171b24;
-    --bg3:       #1e2330;
-    --linha:     #2a3040;
-    --texto:     #c8d0df;
-    --texto-sub: #6b7a90;
-    --verde:     #2a7a4a;
-    --verde-clr: #3daa6a;
+    --bg:        #F6F7F9;
+    --bg2:       #FFFFFF;
+    --bg3:       #E8EBEA;
+    --linha:     #E5E7EB;
+    --texto:     #1A1D2E;
+    --texto-sub: #6B7280;
+    --verde:     #1a6b3a;
+    --verde-clr: #2a9a5a;
     --amarelo:   #8a7010;
-    --amarelo-cl:#d4aa20;
-    --vermelho:  #7a2a2a;
-    --vermelho-cl:#c44;
-    --ouro:      #c49a2a;
-    --batismo:   #3a7ab0;
-    --casamento: #8a4ab0;
-    --obito:     #b04a4a;
-  }
+    --amarelo-cl:#c49a20;
+    --vermelho:  #8a2a1a;
+    --vermelho-cl:#c44030;
+    --ouro:      #2B2F43;
+    --batismo:   #4A5E76;
+    --casamento: #7C5C8A;
+    --obito:     #8A3A2A;
+}
 
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -38,34 +38,48 @@
   }
 
   header {
-    background: var(--bg2);
-    border-bottom: 1px solid var(--linha);
-    padding: 1.2rem 2rem;
+    background: var(--azul-escuro, #2B2F43);
+    border-bottom: 1px solid rgba(255,255,255,0.08);
+    padding: 0 2rem;
     display: flex;
     align-items: center;
     gap: 1.5rem;
+    height: 60px;
   }
   .logo {
-    font-family: 'EB Garamond', serif;
-    font-size: 1.3rem;
-    color: var(--ouro);
+    font-family: 'Inter', sans-serif;
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: #FFFFFF;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+  }
+  .logo::before {
+    content: '⛪';
+    width: 32px; height: 32px;
+    background: #F4794A;
+    border-radius: 6px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 16px;
   }
   .badge-admin {
     font-size: 0.65rem;
     letter-spacing: 0.1em;
     text-transform: uppercase;
-    background: var(--vermelho);
-    color: #ffaaaa;
+    background: rgba(244,121,74,0.2);
+    color: #F4794A;
     padding: 0.2rem 0.5rem;
-    border-radius: 2px;
+    border-radius: 3px;
+    border: 1px solid rgba(244,121,74,0.3);
   }
   .header-link {
     margin-left: auto;
     font-size: 0.8rem;
-    color: var(--texto-sub);
+    color: #BDC3C2;
     text-decoration: none;
   }
-  .header-link:hover { color: var(--texto); }
+  .header-link:hover { color: #FFFFFF; }
 
   main { max-width: 900px; margin: 0 auto; padding: 2rem 1.5rem 4rem; }
 
