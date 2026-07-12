@@ -53,6 +53,29 @@ class Database:
         )
         """)
 
+        # Tabela de auditoria
+        cur.execute("""
+        CREATE TABLE IF NOT EXISTS auditoria (
+            id          INTEGER PRIMARY KEY AUTOINCREMENT,
+            data        TEXT NOT NULL,
+            ip          TEXT NOT NULL,
+            endpoint    TEXT NOT NULL,
+            metodo      TEXT NOT NULL,
+            status      INTEGER,
+            user_agent  TEXT
+        )
+        """)
+        
+        # Índice para queries de auditoria
+        cur.execute("""
+        CREATE INDEX IF NOT EXISTS idx_auditoria_data
+        ON auditoria (data)
+        """)
+        cur.execute("""
+        CREATE INDEX IF NOT EXISTS idx_auditoria_ip
+        ON auditoria (ip)
+        """)
+
         # Batismos
         cur.execute("""
         CREATE TABLE IF NOT EXISTS batismos (
@@ -392,3 +415,108 @@ class Database:
         conn.commit()
         conn.close()
         return upload_id
+
+    def registar_acesso(self, ip: str, endpoint: str, metodo: str, 
+                         status: int, user_agent: str):
+        try:
+            conn = self._conn()
+            cur = conn.cursor()
+            cur.execute("""
+                INSERT INTO auditoria (data, ip, endpoint, metodo, status, user_agent)
+                VALUES (?, ?, ?, ?, ?, ?)
+            """, (
+                datetime.now().isoformat(timespec="seconds"),
+                ip, endpoint, metodo, status, user_agent[:200] if user_agent else None
+            ))
+            conn.commit()
+            conn.close()
+        except Exception:
+            pass  # Nunca deixar auditoria quebrar o pedido principal
+    
+    def obter_auditoria(self) -> dict:
+        conn = self._conn()
+        cur = conn.cursor()
+    
+        # Acessos por IP nos últimos 90 dias
+        cur.execute("""
+            SELECT 
+                ip,
+                COUNT(*) as total,
+                SUM(CASE WHEN endpoint LIKE '%pesquisar%' THEN 1 ELSE 0 END) as pesquisas,
+                SUM(CASE WHEN endpoint LIKE '%admin%' THEN 1 ELSE 0 END) as admin,
+                MIN(data) as primeiro_acesso,
+                MAX(data) as ultimo_acesso
+            FROM auditoria
+            WHERE data >= datetime('now', '-90 days')
+            GROUP BY ip
+            ORDER BY total DESC
+        """)
+        por_ip = [dict(r) for r in cur.fetchall()]
+    
+        # Acessos por dia nos últimos 90 dias
+        cur.execute("""
+            SELECT 
+                substr(data, 1, 10) as dia,
+                COUNT(*) as total,
+                COUNT(DISTINCT ip) as ips_unicos
+            FROM auditoria
+            WHERE data >= datetime('now', '-90 days')
+            GROUP BY dia
+            ORDER BY dia DESC
+            LIMIT 90
+        """)
+        por_dia = [dict(r) for r in cur.fetchall()]
+    
+        # Endpoints mais acedidos
+        cur.execute("""
+            SELECT 
+                endpoint,
+                metodo,
+                COUNT(*) as total,
+                SUM(CASE WHEN status >= 400 THEN 1 ELSE 0 END) as erros
+            FROM auditoria
+            WHERE data >= datetime('now', '-90 days')
+            GROUP BY endpoint, metodo
+            ORDER BY total DESC
+            LIMIT 20
+        """)
+        por_endpoint = [dict(r) for r in cur.fetchall()]
+    
+        # Tentativas suspeitas (status 4xx/5xx, rate limit, admin externo)
+        cur.execute("""
+            SELECT data, ip, endpoint, metodo, status, user_agent
+            FROM auditoria
+            WHERE data >= datetime('now', '-90 days')
+              AND (status = 429 OR status = 403 OR status >= 500)
+            ORDER BY data DESC
+            LIMIT 100
+        """)
+        suspeitos = [dict(r) for r in cur.fetchall()]
+    
+        # Totais gerais
+        cur.execute("""
+            SELECT 
+                COUNT(*) as total_pedidos,
+                COUNT(DISTINCT ip) as ips_unicos,
+                SUM(CASE WHEN status >= 400 THEN 1 ELSE 0 END) as total_erros
+            FROM auditoria
+            WHERE data >= datetime('now', '-90 days')
+        """)
+        totais = dict(cur.fetchone())
+    
+        conn.close()
+        return {
+            "totais": totais,
+            "por_ip": por_ip,
+            "por_dia": por_dia,
+            "por_endpoint": por_endpoint,
+            "suspeitos": suspeitos,
+        }
+    
+    def limpar_auditoria_antiga(self):
+        """Remove registos com mais de 90 dias."""
+        conn = self._conn()
+        cur = conn.cursor()
+        cur.execute("DELETE FROM auditoria WHERE data < datetime('now', '-90 days')")
+        conn.commit()
+        conn.close()
