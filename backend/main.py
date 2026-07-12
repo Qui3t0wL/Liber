@@ -151,6 +151,7 @@ async def pesquisar_ia(
             system="""Responde APENAS com um objecto JSON válido, sem texto adicional, sem markdown, sem explicações.
 Interpreta a pesquisa genealógica e extrai os campos relevantes:
 - nome, pai, mae, noivo, noiva, testemunha, local, fonte, ano_min, ano_max, tipo
+- avo_paterno, avo_paterna, avo_materno, avo_materna (avós paternos e maternos)
 
 Exemplos:
 Input: "joão filho de pedro"
@@ -161,6 +162,9 @@ Output: {"tipo":"casamento","nome":"silva","ano_min":1823,"ano_max":1823}
 
 Input: "filho de joão frade e maria salgueira"
 Output: {"pai":"joão frade","mae":"maria salgueira"}
+
+Input: "neto de manuel silva"
+Output: {"avo_paterno":"manuel silva"}
 
 Devolve APENAS o JSON. Nenhuma palavra adicional.""",
             messages=[{"role": "user", "content": q}]
@@ -189,7 +193,7 @@ Devolve APENAS o JSON. Nenhuma palavra adicional.""",
         usou_ia = False
 
     # Construir termo de pesquisa combinando campos de nome
-    termos = [filtros.get(c) for c in ("nome","pai","mae","noivo","noiva","testemunha") if filtros.get(c)]
+    termos = [filtros.get(c) for c in ("nome","pai","mae","noivo","noiva","testemunha","avo_paterno", "avo_paterna", "avo_materno", "avo_materna") if filtros.get(c)]
     q_combinado = " ".join(termos) if termos else None
 
     resultados, total = db.pesquisar(
