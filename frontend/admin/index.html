@@ -63,6 +63,17 @@
     display: flex; align-items: center; justify-content: center;
     font-size: 16px;
   }
+  .logo-texto {
+    font-size: 0.95rem;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+  }
+  .logo-sub {
+    font-size: 0.7rem;
+    font-weight: 300;
+    color: var(--cinza);
+    margin-top: 1px;
+  }
   .badge-admin {
     font-size: 0.65rem;
     letter-spacing: 0.1em;
@@ -84,7 +95,7 @@
   main { max-width: 900px; margin: 0 auto; padding: 2rem 1.5rem 4rem; }
 
   h2 {
-    font-family: 'EB Garamond', serif;
+    font-family: 'Inter', sans-serif;
     font-size: 1.4rem;
     font-weight: 400;
     margin-bottom: 1.2rem;
@@ -157,12 +168,12 @@
     letter-spacing: 0.02em;
   }
   .btn:disabled { opacity: 0.4; cursor: default; }
-  .btn-primario { background: var(--ouro); color: #0f1117; }
-  .btn-primario:not(:disabled):hover { background: #d4aa30; }
-  .btn-confirmar { background: var(--verde); color: #c8ffd8; }
-  .btn-confirmar:not(:disabled):hover { background: var(--verde-clr); color: #0f1117; }
-  .btn-cancelar { background: var(--bg3); color: var(--texto-sub); border: 1px solid var(--linha); }
-  .btn-cancelar:hover { color: var(--texto); }
+  .btn-primario { background: var(--azul-escuro, #2B2F43); color: #FFFFFF; }
+  .btn-primario:not(:disabled):hover { background: #4A5E76; }
+  .btn-confirmar { background: #2a7a4a; color: #FFFFFF; }
+  .btn-confirmar:not(:disabled):hover { background: #3daa6a; color: #FFFFFF; }
+  .btn-cancelar { background: #F6F7F9; color: #6B7280; border: 1px solid #E5E7EB; }
+  .btn-cancelar:hover { color: #1A1D2E; border-color: #BDC3C2; }
 
   /* ── Relatório de validação ── */
   .relatorio { margin-top: 1.5rem; }
@@ -178,7 +189,7 @@
     border-bottom: none;
   }
   .relatorio-titulo {
-    font-family: 'EB Garamond', serif;
+    font-family: 'Inter', sans-serif;
     font-size: 1.1rem;
     flex: 1;
   }
@@ -207,7 +218,7 @@
   }
   .estat-item { text-align: center; }
   .estat-num {
-    font-family: 'EB Garamond', serif;
+    font-family: 'Inter', sans-serif;
     font-size: 1.8rem;
     line-height: 1;
   }
