@@ -726,8 +726,11 @@ function filtrarTipo(tipo) {
 async function carregarGraficos() {
   try {
     const r = await fetch(`${API}/api/estatisticas-detalhadas`);
+    console.log('Status:', r.status);
+    const dados = await r.json();
+    console.log('Dados:', JSON.stringify(dados));
+    
     if (!r.ok) {
-      // Fallback: mostrar mensagem
       ['grafBatismos','grafCasamentos','grafObitos'].forEach(id => {
         document.getElementById(id).innerHTML =
           '<p style="color:var(--texto-sub);font-size:0.8rem;padding:0.5rem 0">Sem dados suficientes</p>';
@@ -735,12 +738,14 @@ async function carregarGraficos() {
       renderTotais();
       return;
     }
-    const dados = await r.json();
+    
+    console.log('Batismos por década:', dados.batismos_por_decada);
     renderGrafico('grafBatismos', dados.batismos_por_decada, 'barra-batismo');
     renderGrafico('grafCasamentos', dados.casamentos_por_decada, 'barra-casamento');
     renderGrafico('grafObitos', dados.obitos_por_decada, 'barra-obito');
     renderTotais();
   } catch(e) {
+    console.error('Erro:', e);
     renderTotais();
   }
 }
