@@ -168,3 +168,29 @@ SECURITY_HEADERS = {
         "connect-src 'self';"
     ),
 }
+# ── Middleware de auditoria ───────────────────────────────────────────────────
+
+class AuditoriaMiddleware:
+    """Regista todos os acessos na base de dados."""
+    
+    # Endpoints a não registar (demasiado ruidosos)
+    EXCLUIR = ("/static", "/admin/static", "/favicon")
+
+    def __init__(self, db):
+        self.db = db
+
+    def deve_registar(self, path: str) -> bool:
+        return not any(path.startswith(e) for e in self.EXCLUIR)
+
+    async def registar(self, request: Request, status: int):
+        if not self.deve_registar(request.url.path):
+            return
+        ip = _obter_ip(request)
+        user_agent = request.headers.get("User-Agent", "")
+        self.db.registar_acesso(
+            ip=ip,
+            endpoint=request.url.path,
+            metodo=request.method,
+            status=status,
+            user_agent=user_agent,
+        )
