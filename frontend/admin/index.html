@@ -18,8 +18,8 @@
     --verde-clr: #2a9a5a;
     --amarelo:   #8a7010;
     --amarelo-cl:#c49a20;
-    --vermelho:  #8a2a1a;
-    --vermelho-cl:#c44030;
+    --vermelho:  #c0392b;
+    --vermelho-cl:#e74c3c;
     --ouro:      #2B2F43;
     --batismo:   #4A5E76;
     --casamento: #7C5C8A;
@@ -62,17 +62,6 @@
     border-radius: 6px;
     display: flex; align-items: center; justify-content: center;
     font-size: 16px;
-  }
-  .logo-texto {
-    font-size: 0.95rem;
-    font-weight: 600;
-    letter-spacing: -0.01em;
-  }
-  .logo-sub {
-    font-size: 0.7rem;
-    font-weight: 300;
-    color: var(--cinza);
-    margin-top: 1px;
   }
   .badge-admin {
     font-size: 0.65rem;
@@ -275,9 +264,9 @@
     text-transform: uppercase;
     letter-spacing: 0.06em;
   }
-  .tipo-batismo  { background: rgba(58,122,176,0.2); color: #7ab8e8; }
-  .tipo-casamento { background: rgba(138,74,176,0.2); color: #c07ae8; }
-  .tipo-obito    { background: rgba(176,74,74,0.2); color: #e87a7a; }
+  .tipo-batismo   { background: #dce8f0; color: #2a4a6a; }
+  .tipo-casamento { background: #ecdcf0; color: #5a3a6a; }
+  .tipo-obito     { background: #f0dcd8; color: #6a2a1a; }
 
   /* ── Mensagem de sucesso/erro ── */
   .alerta {
@@ -299,8 +288,8 @@
 <body>
 
 <header>
-  <div class="logo-texto">Registos Paroquiais</div>
-  <div class="logo-sub">Administração</div>
+  <div class="logo">Registos Paroquiais</div>
+	<span class="badge-admin">Administração</span>
   <a href="/" class="header-link">← Ver arquivo público</a>
 </header>
 
@@ -386,13 +375,13 @@
   <!-- Reset -->
   <div class="secao">
     <h2>Reinicializar base de dados</h2>
-    <div class="painel" style="border-color: var(--vermelho)">
+    <div class="painel" style="border-color: #F4794A">
       <p style="color:var(--texto-sub);margin-bottom:1.2rem;font-size:0.9rem">
         ⚠ Esta acção apaga <strong style="color:var(--texto)">todos os registos</strong> 
         e o histórico de importações de forma irreversível. 
         Faz um backup antes se necessário.
       </p>
-      <button class="btn" style="background:var(--vermelho);color:#ffaaaa" onclick="confirmarReset()">
+      <button class="btn" style="background:#F4794A;color:#FFFFFF;font-weight:500" onclick="confirmarReset()">
         Limpar base de dados
       </button>
     </div>
