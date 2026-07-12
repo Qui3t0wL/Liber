@@ -378,6 +378,27 @@
           <option value="obito">Óbitos</option>
         </select>
       </div>
+			<div class="grupo">
+			  <label>Freguesia</label>
+			  <div style="position:relative;max-width:420px">
+			    <input
+			      type="text"
+			      id="inputFreguesia"
+			      placeholder="Ex: Mouriscas"
+			      autocomplete="off"
+			      style="width:100%;background:var(--bg3);border:1px solid var(--linha);
+			             color:var(--texto);padding:0.6rem 0.8rem;border-radius:3px;
+			             font-size:0.9rem;outline:none"
+			      oninput="filtrarFreguesias(this.value)"
+			      onfocus="mostrarSugestoes()"
+			      onblur="setTimeout(()=>ocultarSugestoes(),200)"
+			    >
+			    <div id="sugestoesFreguesia" style="display:none;position:absolute;top:100%;
+			         left:0;right:0;background:var(--bg2);border:1px solid var(--linha);
+			         border-top:none;border-radius:0 0 3px 3px;z-index:50;max-height:180px;
+			         overflow-y:auto"></div>
+			  </div>
+			</div>
       <div class="grupo">
         <label>Ficheiro Excel</label>
         <div class="zona-drop" id="zonaDrop" onclick="document.getElementById('inputFicheiro').click()">
@@ -423,24 +444,6 @@
     </div>
   </div>
 
-  <!-- Histórico -->
-  <div class="secao">
-    <h2>Histórico de importações</h2>
-    <div class="painel">
-      <table class="tabela-historico" id="tabelaHistorico">
-        <thead>
-          <tr>
-            <th>Data</th>
-            <th>Ficheiro</th>
-            <th>Tipo</th>
-            <th>Registos</th>
-            <th>Avisos</th>
-          </tr>
-        </thead>
-        <tbody id="corpoHistorico"></tbody>
-      </table>
-    </div>
-  </div>
 	<!-- Auditoria -->
 	<div class="secao">
 	  <h2>Auditoria de acessos <span style="font-size:0.7rem;font-weight:400;color:var(--texto-sub)">(últimos 90 dias)</span></h2>
@@ -469,7 +472,49 @@
 <script>
 let ficheiroAtual = null;
 let dadosValidacao = null;
+let todasFreguesias = [];
 
+async function carregarFreguesias() {
+  try {
+    const r = await fetch('/admin/api/freguesias');
+    todasFreguesias = await r.json();
+  } catch(e) {}
+}
+
+function filtrarFreguesias(val) {
+  const sugestoes = val
+    ? todasFreguesias.filter(f => f.toLowerCase().includes(val.toLowerCase()))
+    : todasFreguesias;
+  renderSugestoes(sugestoes);
+}
+
+function mostrarSugestoes() {
+  renderSugestoes(todasFreguesias);
+}
+
+function ocultarSugestoes() {
+  document.getElementById('sugestoesFreguesia').style.display = 'none';
+}
+
+function renderSugestoes(lista) {
+  const cont = document.getElementById('sugestoesFreguesia');
+  if (!lista.length) { cont.style.display = 'none'; return; }
+  cont.innerHTML = lista.map(f => `
+    <div onclick="seleccionarFreguesia('${f}')"
+         style="padding:0.5rem 0.8rem;cursor:pointer;font-size:0.85rem;
+                border-bottom:1px solid var(--linha)"
+         onmouseover="this.style.background='var(--bg3)'"
+         onmouseout="this.style.background=''">
+      ${f}
+    </div>
+  `).join('');
+  cont.style.display = 'block';
+}
+
+function seleccionarFreguesia(nome) {
+  document.getElementById('inputFreguesia').value = nome;
+  ocultarSugestoes();
+}
 // ── Drag & drop ──────────────────────────────────────────────────────────────
 
 const zona = document.getElementById('zonaDrop');
@@ -504,19 +549,17 @@ function definirFicheiro(f) {
 
 async function validar() {
   if (!ficheiroAtual) return;
-
   const tipo = document.getElementById('tipoRegisto').value;
+  const freguesia = document.getElementById('inputFreguesia').value.trim();
   const btn = document.getElementById('btnValidar');
   btn.disabled = true;
   btn.textContent = 'A validar…';
-
   try {
     const form = new FormData();
     form.append('ficheiro', ficheiroAtual);
-
-    const r = await fetch(`/admin/api/upload?tipo=${tipo}`, {
-      method: 'POST', body: form
-    });
+    const params = new URLSearchParams({ tipo });
+    if (freguesia) params.set('freguesia', freguesia);
+    const r = await fetch(`/admin/api/upload?${params}`, { method: 'POST', body: form });
     dadosValidacao = await r.json();
     renderRelatorio(dadosValidacao, tipo);
   } catch(e) {
@@ -596,25 +639,21 @@ function renderRelatorio(d, tipo) {
 
 async function confirmarImportacao(tipo) {
   if (!ficheiroAtual) return;
-
+  const freguesia = document.getElementById('inputFreguesia').value.trim();
   const btn = document.querySelector('.btn-confirmar');
   if (btn) { btn.disabled = true; btn.textContent = 'A importar…'; }
-
   try {
     const form = new FormData();
     form.append('ficheiro', ficheiroAtual);
-
-    const r = await fetch(`/admin/api/confirmar-upload?tipo=${tipo}`, {
-      method: 'POST', body: form
-    });
+    const params = new URLSearchParams({ tipo });
+    if (freguesia) params.set('freguesia', freguesia);
+    const r = await fetch(`/admin/api/confirmar-upload?${params}`, { method: 'POST', body: form });
     const d = await r.json();
-
     if (d.sucesso) {
       mostrarAlerta('sucesso', `✓ ${d.mensagem}`);
       cancelar();
-      carregarHistorico();
     } else {
-      mostrarAlerta('erro', `Erro na importação: ${d.mensagem || d.erro}`);
+      mostrarAlerta('erro', `Erro: ${d.mensagem || d.erro}`);
     }
   } catch(e) {
     mostrarAlerta('erro', 'Erro ao comunicar com o servidor.');
@@ -809,7 +848,7 @@ function renderAuditoria(d) {
   `;
 }
 	
-carregarHistorico();
+carregarFreguesias();
 carregarAuditoria();
 </script>
 
