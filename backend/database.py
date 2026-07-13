@@ -615,11 +615,20 @@ class Database:
                     tipos[tipo] = row
     
             # Histórico de uploads desta freguesia
-            cur.execute("""
-                SELECT id, ficheiro, tipo, data_upload, registos, avisos
-                FROM uploads
-                WHERE freguesia = ?
-                ORDER BY data_upload DESC
+           cur.execute("""
+                SELECT u.id, u.tipo, u.data_upload, u.registos, u.avisos,
+                       MIN(t.ano) as ano_min, MAX(t.ano) as ano_max
+                FROM uploads u
+                LEFT JOIN (
+                    SELECT upload_id, ano FROM batismos
+                    UNION ALL
+                    SELECT upload_id, ano FROM casamentos
+                    UNION ALL
+                    SELECT upload_id, ano FROM obitos
+                ) t ON t.upload_id = u.id
+                WHERE u.freguesia = ?
+                GROUP BY u.id
+                ORDER BY u.data_upload DESC
             """, (nome,))
             uploads = [dict(r) for r in cur.fetchall()]
     
