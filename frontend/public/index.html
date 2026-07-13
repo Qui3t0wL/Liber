@@ -1203,20 +1203,19 @@ function toggleFiltro(grupo, valor) {
   const s = facetasActivas[grupo];
   if (s.has(valor)) s.delete(valor); else s.add(valor);
   if (s.size === 0) delete facetasActivas[grupo];
+  paginaAtual = 1;  // ← repor à página 1
   aplicarFacetas();
 }
 
 function actualizarSlider(tipo, val) {
   val = parseInt(val);
-  if (tipo === 'min') {
-    anoMinActivo = Math.min(val, anoMaxActivo);
-  } else {
-    anoMaxActivo = Math.max(val, anoMinActivo);
-  }
+  if (tipo === 'min') anoMinActivo = Math.min(val, anoMaxActivo);
+  else anoMaxActivo = Math.max(val, anoMinActivo);
   document.getElementById('sliderMinVal').textContent = anoMinActivo;
   document.getElementById('sliderMaxVal').textContent = anoMaxActivo;
   document.getElementById('sliderMin').value = anoMinActivo;
   document.getElementById('sliderMax').value = anoMaxActivo;
+  paginaAtual = 1;  // ← repor à página 1
   aplicarFacetas();
 }
 
@@ -1225,11 +1224,8 @@ function aplicarFacetas() {
     || anoMinActivo > anoMinGlobal || anoMaxActivo < anoMaxGlobal;
 
   let filtrados = todosResultados.filter(r => {
-    // Filtro de anos
     const ano = r.ano || 0;
     if (ano && (ano < anoMinActivo || ano > anoMaxActivo)) return false;
-
-    // Filtros OR dentro de cada grupo, AND entre grupos
     for (const [grupo, valores] of Object.entries(facetasActivas)) {
       if (valores.size === 0) continue;
       let match = false;
@@ -1242,28 +1238,36 @@ function aplicarFacetas() {
     return true;
   });
 
-  // Actualizar badge de filtros activos
+  // Badge de filtros activos
   const nFiltros = Object.values(facetasActivas).reduce((s,v) => s + v.size, 0)
     + (anoMinActivo > anoMinGlobal || anoMaxActivo < anoMaxGlobal ? 1 : 0);
   const badge = document.getElementById('badgeFiltros');
-  if (nFiltros > 0) {
-    badge.textContent = nFiltros;
-    badge.style.display = 'inline';
-  } else {
-    badge.style.display = 'none';
-  }
+  badge.textContent = nFiltros;
+  badge.style.display = nFiltros > 0 ? 'inline' : 'none';
 
-  // Info de resultados filtrados
-  const textoFilt = document.getElementById('textoFiltrados');
-  if (temFiltros) {
-    textoFilt.textContent = `→ ${filtrados.length.toLocaleString('pt-PT')} filtrados`;
-    textoFilt.style.display = 'inline';
-  } else {
-    textoFilt.style.display = 'none';
-  }
+  // Info resultados
+  const total = filtrados.length;
+  const totalOriginal = todosResultados.length;
+  const inicio = (paginaAtual - 1) * POR_PAGINA + 1;
+  const fim    = Math.min(paginaAtual * POR_PAGINA, total);
+  const info   = document.getElementById('infoResultados');
+  info.style.display = total > 0 ? 'flex' : 'none';
 
-  renderCards(filtrados);
-  renderFacetas(todosResultados); // recalcular com contagens originais
+  const textoBase = total === totalOriginal
+    ? `${inicio}–${fim} de ${total.toLocaleString('pt-PT')} registos`
+    : `${inicio}–${fim} de ${total.toLocaleString('pt-PT')} filtrados (${totalOriginal.toLocaleString('pt-PT')} no total)`;
+  document.getElementById('textoResultados').textContent = textoBase;
+  document.getElementById('textoFiltrados').style.display = 'none';
+
+  // Paginar
+  const paginaFiltrados = filtrados.slice(
+    (paginaAtual - 1) * POR_PAGINA,
+    paginaAtual * POR_PAGINA
+  );
+
+  renderCards(paginaFiltrados);
+  renderPaginacaoCliente(total);
+  renderFacetas(todosResultados); // contagens sempre sobre o total
 }
 
 function limparFacetas() {
@@ -1273,6 +1277,32 @@ function limparFacetas() {
   aplicarFacetas();
 }
 
+function renderPaginacaoCliente(total) {
+  const cont    = document.getElementById('paginacao');
+  const nPaginas = Math.ceil(total / POR_PAGINA);
+  if (nPaginas <= 1) { cont.innerHTML = ''; return; }
+
+  const atual = paginaAtual;
+  const paginas = [1];
+  if (atual > 3) paginas.push('...');
+  for (let p = Math.max(2, atual-1); p <= Math.min(nPaginas-1, atual+1); p++)
+    paginas.push(p);
+  if (atual < nPaginas-2) paginas.push('...');
+  if (nPaginas > 1) paginas.push(nPaginas);
+
+  cont.innerHTML = paginas.map(p =>
+    p === '...'
+      ? `<span style="padding:0.35rem 0.3rem;color:var(--cinza)">…</span>`
+      : `<button class="btn-pag ${p===atual?'ativo':''}"
+           onclick="mudarPagina(${p})">${p}</button>`
+  ).join('');
+}
+
+function mudarPagina(p) {
+  paginaAtual = p;
+  aplicarFacetas();
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
 // ── Drawer mobile ─────────────────────────────────────────────────────────────
 
 function abrirDrawer() {
@@ -1543,15 +1573,16 @@ function renderGrafico(containerId, dados, classeBarrra) {
 // ── Pesquisa normal ───────────────────────────────────────────────────────────
 
 async function pesquisar(pagina) {
-  paginaAtual = pagina;
+  paginaAtual = pagina || 1;
   esconderInterpretacao();
-  const q       = document.getElementById('campoPesquisa').value.trim();
-  const tipo    = document.getElementById('filtrTipo').value;
-  const anoMin  = document.getElementById('filtrAnoMin').value;
-  const anoMax  = document.getElementById('filtrAnoMax').value;
-  const fonte   = document.getElementById('filtrFonte').value;
+  const q      = document.getElementById('campoPesquisa').value.trim();
+  const tipo   = document.getElementById('filtrTipo').value;
+  const anoMin = document.getElementById('filtrAnoMin').value;
+  const anoMax = document.getElementById('filtrAnoMax').value;
+  const fonte  = document.getElementById('filtrFonte').value;
 
-  const params = new URLSearchParams({ pagina, por_pagina: 25 });
+  // Trazer todos os resultados de uma vez
+  const params = new URLSearchParams({ pagina: 1, por_pagina: 5000 });
   if (q) params.set('q', q);
   if (tipo) params.set('tipo', tipo);
   if (anoMin) params.set('ano_min', anoMin);
@@ -1562,6 +1593,10 @@ async function pesquisar(pagina) {
   try {
     const r = await fetch(`${API}/api/pesquisar?${params}`);
     const d = await r.json();
+    todosResultados = d.resultados;
+    facetasActivas  = {};
+    anoMinActivo    = 1500;
+    anoMaxActivo    = 2100;
     renderResultados(d, q);
   } catch(e) {
     document.getElementById('listaResultados').innerHTML =
@@ -1573,16 +1608,13 @@ async function pesquisar(pagina) {
 
 async function pesquisarIA(pagina) {
   const q = document.getElementById('campoPesquisa').value.trim();
-  if (!q) {
-    document.getElementById('campoPesquisa').focus();
-    return;
-  }
-  paginaAtual = pagina;
+  if (!q) { document.getElementById('campoPesquisa').focus(); return; }
+  paginaAtual = 1;
   mostrarCarregando();
   esconderInterpretacao();
 
   try {
-    const params = new URLSearchParams({ q, pagina, por_pagina: 25 });
+    const params = new URLSearchParams({ q, pagina: 1, por_pagina: 5000 });
     const r = await fetch(`${API}/api/pesquisar-ia?${params}`);
     const d = await r.json();
     if (!r.ok) {
@@ -1590,6 +1622,10 @@ async function pesquisarIA(pagina) {
         `<div class="estado"><div class="estado-icon">⚠</div><p>${d.detail || 'Erro na pesquisa IA.'}</p></div>`;
       return;
     }
+    todosResultados = d.resultados;
+    facetasActivas  = {};
+    anoMinActivo    = 1500;
+    anoMaxActivo    = 2100;
     mostrarInterpretacao(d.interpretacao, d.usou_ia);
     renderResultados(d, '');
   } catch(e) {
@@ -1653,22 +1689,18 @@ function mostrarCarregando() {
   document.getElementById('paginacao').innerHTML = '';
 }
 
+const POR_PAGINA = 25;
+
 function renderResultados(d, q) {
-  const lista  = document.getElementById('listaResultados');
-  const info   = document.getElementById('infoResultados');
-  const layout = document.getElementById('layoutResultados');
-  const painel = document.getElementById('painelFacetas');
+  const info      = document.getElementById('infoResultados');
+  const layout    = document.getElementById('layoutResultados');
+  const painel    = document.getElementById('painelFacetas');
   const btnMobile = document.getElementById('btnFiltrarMobile');
 
-  // Guardar resultados completos
-  todosResultados = d.resultados;
-  facetasActivas  = {};
-  anoMinActivo    = 1500;
-  anoMaxActivo    = 2100;
-
   if (d.total === 0) {
-    lista.innerHTML = `<div class="estado"><div class="estado-icon">🔍</div>
-      <p>Nenhum registo encontrado${q ? ` para "<strong>${q}</strong>"` : ''}.</p></div>`;
+    document.getElementById('listaResultados').innerHTML =
+      `<div class="estado"><div class="estado-icon">🔍</div>
+       <p>Nenhum registo encontrado${q ? ` para "<strong>${q}</strong>"` : ''}.</p></div>`;
     info.style.display = 'none';
     painel.style.display = 'none';
     layout.classList.add('sem-facetas');
@@ -1676,12 +1708,6 @@ function renderResultados(d, q) {
     document.getElementById('paginacao').innerHTML = '';
     return;
   }
-
-  info.style.display = 'flex';
-  const inicio = (d.pagina - 1) * d.por_pagina + 1;
-  const fim    = Math.min(d.pagina * d.por_pagina, d.total);
-  document.getElementById('textoResultados').textContent =
-    `${inicio}–${fim} de ${d.total.toLocaleString('pt-PT')} registos`;
 
   // Mostrar painel de facetas
   if (d.total > 1) {
@@ -1691,8 +1717,8 @@ function renderResultados(d, q) {
     renderFacetas(todosResultados);
   }
 
-  renderCards(todosResultados);
-  renderPaginacao(d);
+  info.style.display = 'flex';
+  aplicarFacetas();
 }
 
 function renderCards(resultados) {
