@@ -771,6 +771,8 @@
     .card { grid-template-columns: auto 1fr; }
     .card-ano { grid-column: 2; grid-row: 1; text-align: right; }
     .btns-pesquisa { flex-wrap: wrap; }
+    /* Estatísticas — resumo global */
+    .stats-resumo-global { grid-template-columns: repeat(2, 1fr) !important; }
   }
 
   /* ── Mobile (≤ 640px) ── */
@@ -1416,7 +1418,7 @@ function renderEstatisticas(freguesias, detalhadas) {
 
   let html = `
     <!-- Resumo global -->
-    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:1rem;margin-bottom:1.5rem">
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:1rem;margin-bottom:1.5rem" class="stats-resumo-global">
       ${[
         { label: 'Total de registos', valor: totalGeral, cor: 'var(--azul-escuro)' },
         { label: 'Batismos', valor: totalB, cor: 'var(--batismo)' },
