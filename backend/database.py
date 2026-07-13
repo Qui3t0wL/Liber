@@ -615,7 +615,7 @@ class Database:
                     tipos[tipo] = row
     
             # Histórico de uploads desta freguesia
-           cur.execute("""
+            cur.execute("""
                 SELECT u.id, u.tipo, u.data_upload, u.registos, u.avisos,
                        MIN(t.ano) as ano_min, MAX(t.ano) as ano_max
                 FROM uploads u
