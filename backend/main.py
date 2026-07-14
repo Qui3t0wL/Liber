@@ -120,7 +120,7 @@ async def pesquisar_ia(
     request: Request,
     q: str = Query(..., max_length=300),
     pagina: int = Query(1, ge=1, le=10000),
-    por_pagina: int = Query(25, ge=1, le=100),
+    por_pagina: int = Query(25, ge=1, le=5000), #alterado aqui de 100 para 5000
     _=Depends(verificar_ip_local),
 ):
     verificar_rate_limit(request, "ia")
