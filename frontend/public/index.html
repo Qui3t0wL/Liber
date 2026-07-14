@@ -1504,8 +1504,8 @@ function aplicarFacetas() {
   const info    = document.getElementById('infoResultados');
   info.style.display = total > 0 ? 'flex' : 'none';
   document.getElementById('textoResultados').textContent = total === totalOr
-    ? `${inicio}–${fim} de ${total.toLocaleString('pt-PT')} registos`
-    : `${inicio}–${fim} de ${total.toLocaleString('pt-PT')} filtrados (${totalOr.toLocaleString('pt-PT')} no total)`;
+    ? `${inicio} – ${fim} de ${total.toLocaleString('pt-PT')} registos`
+    : `${inicio} – ${fim} de ${total.toLocaleString('pt-PT')} filtrados (${totalOr.toLocaleString('pt-PT')} no total)`;
   document.getElementById('textoFiltrados').style.display = 'none';
 
   renderCards(filtrados.slice((paginaAtual-1)*POR_PAGINA, paginaAtual*POR_PAGINA));
