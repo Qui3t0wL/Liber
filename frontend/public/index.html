@@ -92,10 +92,10 @@
   .btn-nav.ativo { background: var(--laranja); color: var(--branco); }
 
   .disclaimer-bar {
-    background: rgba(244,121,74,0.08);
+    /*background: rgba(244,121,74,0.08);*/
     border-bottom: 1px solid var(--laranja-soft);
     color: var(--texto-sub);
-    font-size: 0.72rem;
+    font-size: 1rem; /* font-size: 0.72rem */
     text-align: center;
     padding: 0.45rem 1.5rem;
     line-height: 1.4;
@@ -822,9 +822,7 @@
     <button class="btn-nav" onclick="mostrarVista('estatisticas')">Estatísticas</button>
   </nav>
 </header>
-<div class="disclaimer-bar">
-  ⚠ A informação disponível não dispensa a consulta do registo original para confirmação e obtenção de dados adicionais. Cada registo contém a fonte e o fólio para localização.
-</div>
+
 <div class="stats-bar">
   <div class="stat" onclick="filtrarTipo('batismo')" title="Ver apenas batismos">
     <div class="stat-valor" id="statBatismos">—</div>
@@ -840,6 +838,10 @@
   </div>
 </div>
 
+<div class="disclaimer-bar">
+  ⚠ A informação disponível não dispensa a consulta do registo original para confirmação e obtenção de dados adicionais. Cada registo contém a fonte e o fólio para localização.
+</div>
+  
 <div class="container">
 
   <!-- Vista de pesquisa -->
