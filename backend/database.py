@@ -661,7 +661,7 @@ class Database:
 
 	# ── Verificação de duplicados ─────────────────────────────────────────────────
 	
-	def verificar_existencia_por_ref(self, tipo: str, pares: list) -> list:
+    def verificar_existencia_por_ref(self, tipo: str, pares: list) -> list:
         tabela = {"batismo": "batismos", "casamento": "casamentos", "obito": "obitos"}[tipo]
         conn = self._conn()
         cur = conn.cursor()
