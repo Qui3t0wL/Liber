@@ -670,15 +670,16 @@ class Database:
 	    conn = self._conn()
 	    cur = conn.cursor()
 	    resultado = []
-	    for fonte, nr_ordem in pares:
+	    
+		for fonte, nr_ordem in pares:
 	        cur.execute(
 	            f"SELECT 1 FROM {tabela} WHERE LOWER(fonte) = LOWER(?) AND LOWER(nr_ordem) = LOWER(?) LIMIT 1",
 	            (fonte, nr_ordem),
 	        )
 	        resultado.append(cur.fetchone() is not None)
+			
 	    conn.close()
 	    return resultado
-	
 	
 	def verificar_existencia_por_bio(self, tipo: str, chaves: list[tuple]) -> list[bool]:
 	    """
