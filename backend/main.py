@@ -219,7 +219,7 @@ async def fazer_upload(
     freguesia: str = Query(default=None, max_length=100),
     _=Depends(verificar_ip_local),
 ):
-    verificar_rate_limit(request, "upload")
+    # verificar_rate_limit(request, "upload") -- removido rate limit para ip locais
     validar_tipo_registo(tipo)
     conteudo = await ficheiro.read()
     validar_ficheiro(ficheiro.filename, conteudo)
@@ -237,7 +237,7 @@ async def confirmar_upload(
     freguesia: str = Query(default=None, max_length=100),
     _=Depends(verificar_ip_local),
 ):
-    verificar_rate_limit(request, "upload")
+    # verificar_rate_limit(request, "upload") -- removido rate limit para ip locais
     validar_tipo_registo(tipo)
     conteudo = await ficheiro.read()
     validar_ficheiro(ficheiro.filename, conteudo)
