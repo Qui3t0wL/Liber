@@ -283,6 +283,60 @@
   ::-webkit-scrollbar-track { background: var(--bg2); }
   ::-webkit-scrollbar-thumb { background: var(--linha); border-radius: 3px; }
 
+	/* ── Textarea do footer ── */
+  .footer-textarea {
+    width: 100%;
+    min-height: 120px;
+    padding: 0.75rem 0.9rem;
+    font-family: 'Inter', sans-serif;
+    font-size: 0.88rem;
+    font-weight: 300;
+    line-height: 1.6;
+    color: var(--texto);
+    background: var(--bg3);
+    border: 1px solid var(--linha);
+    border-radius: 3px;
+    resize: vertical;
+    outline: none;
+    transition: border-color 0.15s;
+  }
+  .footer-textarea:focus { border-color: var(--ouro); background: var(--bg2); }
+
+  .footer-contador {
+    font-size: 0.7rem;
+    color: var(--texto-sub);
+    text-align: right;
+    margin-top: 0.3rem;
+  }
+  .footer-contador.perto { color: var(--amarelo-cl); }
+  .footer-contador.excedido { color: var(--vermelho-cl); }
+
+  .footer-preview {
+    margin-top: 1.2rem;
+    padding: 1rem 1.2rem;
+    background: #2B2F43;
+    border-radius: 4px;
+  }
+  .footer-preview-label {
+    font-size: 0.62rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: #6b7280;
+    margin-bottom: 0.5rem;
+  }
+  .footer-preview-texto {
+    font-size: 0.78rem;
+    line-height: 1.6;
+    color: #9aa3b0;
+    word-break: break-word;
+  }
+  .footer-preview-texto a {
+    color: #BDC3C2;
+    text-decoration: underline;
+    text-underline-offset: 2px;
+  }
+
+	/* Real footer*/
 	footer {
 	  background: #2B2F43;
 	  color: #9aa3b0;
@@ -626,6 +680,34 @@
     </div>
   </div>
 
+	<!-- ── Secção do Footer ── -->
+  <div class="secao">
+    <h2>Texto do rodapé</h2>
+    <div class="painel">
+      <p style="font-size:0.85rem;color:var(--texto-sub);margin-bottom:1.2rem;line-height:1.6">
+        Este texto aparece no rodapé da interface pública. Pode incluir URLs — serão convertidos automaticamente em links.
+      </p>
+      <textarea
+        class="footer-textarea"
+        id="footerTextarea"
+        maxlength="2000"
+        placeholder="Escreve aqui o texto de exclusão de responsabilidade…"
+        oninput="actualizarPreviewFooter()"
+      ></textarea>
+      <div class="footer-contador" id="footerContador">0 / 2000</div>
+
+      <div class="footer-preview">
+        <div class="footer-preview-label">Pré-visualização</div>
+        <div class="footer-preview-texto" id="footerPreview"></div>
+      </div>
+
+      <div style="margin-top:1.2rem;display:flex;gap:0.8rem;flex-wrap:wrap">
+        <button class="btn btn-confirmar" onclick="guardarFooter()">Guardar rodapé</button>
+        <button class="btn btn-cancelar"  onclick="restaurarFooterDefault()">Restaurar texto predefinido</button>
+      </div>
+    </div>
+  </div>
+	
 	<!-- Auditoria -->
 	<div class="secao">
 	  <h2>Auditoria de acessos <span style="font-size:0.7rem;font-weight:400;color:var(--texto-sub)">(últimos 90 dias)</span></h2>
@@ -768,6 +850,9 @@
 let ficheiroAtual = null;
 let dadosValidacao = null;
 let todasFreguesias = [];
+
+const FOOTER_DEFAULT = 'Exclusão de responsabilidade: A informação disponível nesta plataforma foi recolhida a partir de registos paroquiais disponíveis online em https://digitarq.arquivos.pt. É possível que existam eventuais erros de transcrição.';
+const FOOTER_MAX     = 2000;
 
 async function carregarFreguesias() {
   try {
@@ -1046,6 +1131,79 @@ function esconderAlerta() {
   document.getElementById('alerta').style.display = 'none';
 }
 
+// ── Footer editável ───────────────────────────────────────────────────────────
+
+function textoParaHtml(texto) {
+  if (!texto) return '';
+  // Escapa HTML e converte URLs em links
+  const escapado = texto
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;');
+  return escapado.replace(
+    /(https?:\/\/[^\s]+)/g,
+    '<a href="$1" target="_blank" rel="noopener">$1</a>'
+  );
+}
+
+function actualizarPreviewFooter() {
+  const val = document.getElementById('footerTextarea').value;
+  const n   = val.length;
+
+  // Contador
+  const cont = document.getElementById('footerContador');
+  cont.textContent = `${n} / ${FOOTER_MAX}`;
+  cont.className   = 'footer-contador' + (n > FOOTER_MAX * 0.9 ? (n >= FOOTER_MAX ? ' excedido' : ' perto') : '');
+
+  // Preview
+  document.getElementById('footerPreview').innerHTML = textoParaHtml(val);
+
+  // Footer desta página
+  const adminFooter = document.getElementById('footerAdminTexto');
+  if (adminFooter) adminFooter.innerHTML = textoParaHtml(val);
+}
+
+async function carregarFooter() {
+  try {
+    const r = await fetch('/admin/api/configuracao/footer');
+    const d = await r.json();
+    const texto = d.footer_texto || FOOTER_DEFAULT;
+    document.getElementById('footerTextarea').value = texto;
+    actualizarPreviewFooter();
+  } catch(e) {
+    document.getElementById('footerTextarea').value = FOOTER_DEFAULT;
+    actualizarPreviewFooter();
+  }
+}
+
+async function guardarFooter() {
+  const texto = document.getElementById('footerTextarea').value.trim();
+  if (!texto) { mostrarAlerta('erro', 'O texto do rodapé não pode estar vazio.'); return; }
+  if (texto.length > FOOTER_MAX) { mostrarAlerta('erro', `Texto demasiado longo (máx. ${FOOTER_MAX} caracteres).`); return; }
+  try {
+    const r = await fetch('/admin/api/configuracao/footer', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ valor: texto }),
+    });
+    const d = await r.json();
+    if (d.sucesso) {
+      mostrarAlerta('sucesso', '✓ Rodapé guardado com sucesso.');
+    } else {
+      mostrarAlerta('erro', d.detail || 'Erro ao guardar.');
+    }
+  } catch(e) {
+    mostrarAlerta('erro', 'Erro ao comunicar com o servidor.');
+  }
+}
+
+function restaurarFooterDefault() {
+  if (!confirm('Restaurar o texto predefinido? O texto actual será substituído.')) return;
+  document.getElementById('footerTextarea').value = FOOTER_DEFAULT;
+  actualizarPreviewFooter();
+}
+
+// Auditoria
 async function carregarAuditoria() {
   try {
     const r = await fetch('/admin/api/auditoria');
@@ -1430,16 +1588,15 @@ async function removerNo(id, nome) {
 
 carregarFreguesias();
 carregarAuditoria();
+carregarFooter();
 carregarTokens();
 carregarNos();
 </script>
 
 <footer>
   <div class="footer-inner">
-    <p class="footer-principal">
-      <strong>Exclusão de responsabilidade</strong>: A informação disponível nesta plataforma foi recolhida a partir dos ficheiros Excel de <strong>Augusto Maia Alves</strong> (batismos 1860-1911) e de <strong>António da Graça Pereira</strong> (casamentos 1901-1911), do ficheiro Word de <strong>Carlos Alves Bento</strong> (óbitos de 1839-1859), da transcrição de registos disponíveis no Arquivo Distrital de Santarém e no Arquivo Nacional Torre do Tombo, bem como de alguns registos paroquiais da paróquia de São Sebastião de Mouriscas. É possível que existam eventuais erros de transcrição.
-    </p>
-    <p class="footer-rodape">Plataforma produzida por Filipe Dias com auxílio de Inteligência Artificial · 2026</p>
+    <p class="footer-principal" id="footerAdminTexto"></p>
+    <p class="footer-rodape">Plataforma produzida com auxílio de Inteligência Artificial · 2026</p>
   </div>
 </footer>
 </body>
