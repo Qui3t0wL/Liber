@@ -271,6 +271,36 @@ def estatisticas_freguesias(request: Request):
 def listar_freguesias(request: Request, _=Depends(verificar_ip_local)):
     return db.listar_freguesias()
 
+@app.get("/api/configuracao/footer")
+def obter_footer(request: Request):
+    """Devolve o texto do footer para o frontend público."""
+    verificar_rate_limit(request, "pesquisa")
+    valor = db.obter_configuracao("footer_texto")
+    return {"footer_texto": valor or ""}
+
+
+@app.get("/admin/api/configuracao/footer")
+def admin_obter_footer(request: Request, _=Depends(verificar_ip_local)):
+    """Devolve o texto actual do footer para edição."""
+    verificar_rate_limit(request, "admin")
+    valor = db.obter_configuracao("footer_texto")
+    return {"footer_texto": valor or ""}
+
+@app.post("/admin/api/configuracao/footer")
+def admin_guardar_footer(
+    request: Request,
+    payload: ConfiguracaoPayload,
+    _=Depends(verificar_ip_local),
+):
+    """Actualiza o texto do footer."""
+    verificar_rate_limit(request, "admin")
+    texto = payload.valor.strip()
+    if len(texto) > 2000:
+        raise HTTPException(status_code=400, detail="Texto demasiado longo (máx. 2000 caracteres).")
+    db.definir_configuracao("footer_texto", texto)
+    logger.info("Footer actualizado.")
+    return {"sucesso": True, "footer_texto": texto}
+
 # ── Servir frontends estáticos ────────────────────────────────────────────────
 
 app.mount("/static", StaticFiles(directory="frontend/public"), name="public")
