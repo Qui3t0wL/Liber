@@ -59,6 +59,11 @@ def verificar_ip_local(request: Request):
         raise HTTPException(status_code=403, detail="Acesso restrito à rede local.")
     return client_ip
 
+# ── Modelo para actualização de configuração ──────────────────────────────────
+
+class ConfiguracaoPayload(BaseModel):
+    valor: str
+    
 # ── Rotas públicas ────────────────────────────────────────────────────────────
 
 @app.get("/api/pesquisar")
