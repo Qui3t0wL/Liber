@@ -222,6 +222,7 @@ async def fazer_upload(
     ficheiro: UploadFile = File(...),
     tipo: str = Query(...),
     freguesia: str = Query(default=None, max_length=100),
+    modo_actualizacao: bool = Query(False),
     _=Depends(verificar_ip_local),
 ):
     # verificar_rate_limit(request, "upload") -- removido rate limit para ip locais
@@ -240,6 +241,7 @@ async def confirmar_upload(
     ficheiro: UploadFile = File(...),
     tipo: str = Query(...),
     freguesia: str = Query(default=None, max_length=100),
+    modo_actualizacao: bool = Query(False),
     _=Depends(verificar_ip_local),
 ):
     # verificar_rate_limit(request, "upload") -- removido rate limit para ip locais
@@ -249,7 +251,7 @@ async def confirmar_upload(
     importer = ExcelImporter(db)
     return importer.validar_e_importar(
         conteudo, tipo, ficheiro.filename,
-        dry_run=False, freguesia=freguesia
+        dry_run=False, freguesia=freguesia, modo_actualizacao=modo_actualizacao,
     )
 
 @app.delete("/admin/api/reset-db")
@@ -780,4 +782,4 @@ async def registo_proxy(
 
 if __name__ == "__main__":
     db.criar_tabelas()
-    uvicorn.run("main:app", host="0.0.0.0", port=8000, reload=False)
+    uvicorn.run("main:app", host="0.0.0.0", port=9000, reload=False)
