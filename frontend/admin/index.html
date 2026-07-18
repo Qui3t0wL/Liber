@@ -1042,17 +1042,15 @@ function renderRelatorio(d, tipo) {
 async function confirmarImportacao(tipo) {
   if (!ficheiroAtual) return;
   const freguesia = document.getElementById('inputFreguesia').value.trim();
+  const modoAct = document.getElementById('modoActualizacao').checked;
+  const params = new URLSearchParams({ tipo });
+  if (freguesia) params.set('freguesia', freguesia);
+  if (modoAct)   params.set('modo_actualizacao', 'true');
   const btn = document.querySelector('.btn-confirmar');
-	const modoAct = document.getElementById('modoActualizacao').checked;
-	const params = new URLSearchParams({ tipo });
-	if (freguesia) params.set('freguesia', freguesia);
-	if (modoAct)   params.set('modo_actualizacao', 'true');
   if (btn) { btn.disabled = true; btn.textContent = 'A importar…'; }
   try {
     const form = new FormData();
     form.append('ficheiro', ficheiroAtual);
-    const params = new URLSearchParams({ tipo });
-    if (freguesia) params.set('freguesia', freguesia);
     const r = await fetch(`/admin/api/confirmar-upload?${params}`, { method: 'POST', body: form });
     const d = await r.json();
     if (d.sucesso) {
