@@ -251,7 +251,7 @@ async def confirmar_upload(
     importer = ExcelImporter(db)
     return importer.validar_e_importar(
         conteudo, tipo, ficheiro.filename,
-        dry_run=True, freguesia=freguesia, modo_actualizacao=modo_actualizacao,
+        dry_run=False, freguesia=freguesia, modo_actualizacao=modo_actualizacao,
     )
 
 @app.delete("/admin/api/reset-db")
