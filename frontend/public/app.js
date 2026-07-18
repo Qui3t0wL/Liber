@@ -856,7 +856,10 @@ async function abrirDetalhe(tipo, id) {
       campos.forEach(({c, l, largo}) => {
         const div = document.createElement('div');
         div.className = `modal-campo${largo?' largo':''}`;
-        div.innerHTML = `<label>${l}</label><span>${reg[c]}</span>`;
+        const valor = c === 'notas' && reg[c]
+          ? reg[c].split('//').map(s => s.trim()).join('<br>')
+          : reg[c];
+        div.innerHTML = `<label>${l}</label><span>${valor}</span>`;
         grid.appendChild(div);
       });
       secDiv.appendChild(grid);
