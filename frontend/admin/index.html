@@ -1013,9 +1013,12 @@ function renderRelatorio(d, tipo) {
 
   // Acções
   const acoes = document.getElementById('acoesRelatorio');
-  if (d.total_erros === 0 && d.total_novos > 0) {
-    const labelBtn = d.total_duplicados > 0
-      ? `Importar ${d.total_novos} registos novos (${d.total_duplicados} duplicado(s) ignorados)`
+  const modoAct = document.getElementById('modoActualizacao').checked;
+  const temAlgoParaFazer = d.total_novos > 0 || (modoAct && d.total_duplicados_bd > 0);
+
+  if (d.total_erros === 0 && temAlgoParaFazer) {
+    const labelBtn = modoAct && d.total_duplicados_bd > 0
+      ? `Actualizar ${d.total_duplicados_bd} registos existentes` + (d.total_novos > 0 ? ` e importar ${d.total_novos} novos` : '')
       : `Importar ${d.total_novos} registos`;
     acoes.innerHTML = `
       <button class="btn btn-confirmar" onclick="confirmarImportacao('${tipo}')">
@@ -1027,7 +1030,7 @@ function renderRelatorio(d, tipo) {
     acoes.innerHTML = `
       <button class="btn btn-cancelar" onclick="cancelar()">Corrigir e tentar novamente</button>
     `;
-  } else if (d.total_novos === 0 && d.total_duplicados > 0) {
+  } else if (d.total_novos === 0 && d.total_duplicados > 0 && !modoAct) {
     acoes.innerHTML = `<p style="color:var(--texto-sub);font-size:0.85rem">Todos os registos já existem na base de dados.</p>`;
   } else {
     acoes.innerHTML = `<p style="color:var(--texto-sub);font-size:0.85rem">Nenhum registo encontrado no ficheiro.</p>`;
