@@ -214,9 +214,6 @@ class ExcelImporter:
         }
 
         if not dry_run and not erros_criticos:
-            print(f"DEBUG modo_actualizacao={modo_actualizacao}")
-            print(f"DEBUG dup_bd={len(dup_bd)}")
-            print(f"DEBUG registos_unicos_antes_bd={len(registos_unicos_antes_bd)}")
             if modo_actualizacao and dup_bd:
                 total_actualizados = self._actualizar_duplicados_bd(registos_unicos_antes_bd, tipo)
             else:
@@ -256,18 +253,14 @@ class ExcelImporter:
         total = 0
         for reg in registos:
             chave = _chave_registo(reg, tipo)
-            print(f"DEBUG chave={chave}")
             if chave[1] == "ref":
                 fonte    = reg.get("fonte", "")
                 nr_ordem = reg.get("nr_ordem", "")
-                print(f"DEBUG actualizando por ref: fonte={fonte} nr_ordem={nr_ordem}")
                 if self.db.actualizar_registo_por_ref(tipo, fonte, nr_ordem, reg):
                     total += 1
             else:
-                print(f"DEBUG actualizando por bio: chave={chave}")
                 if self.db.actualizar_registo_por_bio(tipo, chave, reg):
                     total += 1
-        print(f"DEBUG total_actualizados={total}")
         return total
 
     def _detectar_duplicados_intra(
