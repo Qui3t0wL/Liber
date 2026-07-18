@@ -622,6 +622,12 @@
 			         overflow-y:auto"></div>
 			  </div>
 			</div>
+			<div class="grupo" style="flex-direction:row;align-items:center;gap:0.75rem;margin-bottom:1.2rem">
+			  <label style="margin:0;text-transform:none;font-size:0.85rem;cursor:pointer;display:flex;align-items:center;gap:0.5rem">
+			    <input type="checkbox" id="modoActualizacao" style="accent-color:var(--verde);width:15px;height:15px">
+			    Actualizar registos existentes (em vez de ignorar duplicados)
+			  </label>
+			</div>
       <div class="grupo">
         <label>Ficheiro Excel</label>
         <div class="zona-drop" id="zonaDrop" onclick="document.getElementById('inputFicheiro').click()">
@@ -923,6 +929,10 @@ async function validar() {
   const tipo = document.getElementById('tipoRegisto').value;
   const freguesia = document.getElementById('inputFreguesia').value.trim();
   const btn = document.getElementById('btnValidar');
+	const modoAct = document.getElementById('modoActualizacao').checked;
+	const params = new URLSearchParams({ tipo });
+	if (freguesia) params.set('freguesia', freguesia);
+	if (modoAct)   params.set('modo_actualizacao', 'true');
   btn.disabled = true;
   btn.textContent = 'A validar…';
   try {
@@ -964,7 +974,10 @@ function renderRelatorio(d, tipo) {
   } else if (d.total_avisos > 0) {
     pill.textContent = 'Com avisos';
     pill.className = 'pill pill-amarelo';
-  } else {
+	} else if (d.total_duplicados > 0 && document.getElementById('modoActualizacao').checked) {
+    pill.textContent = 'Com actualizações pendentes';
+    pill.className = 'pill pill-amarelo';
+	} else {
     pill.textContent = 'Pronto para importar';
     pill.className = 'pill pill-verde';
   }
@@ -1027,6 +1040,10 @@ async function confirmarImportacao(tipo) {
   if (!ficheiroAtual) return;
   const freguesia = document.getElementById('inputFreguesia').value.trim();
   const btn = document.querySelector('.btn-confirmar');
+	const modoAct = document.getElementById('modoActualizacao').checked;
+	const params = new URLSearchParams({ tipo });
+	if (freguesia) params.set('freguesia', freguesia);
+	if (modoAct)   params.set('modo_actualizacao', 'true');
   if (btn) { btn.disabled = true; btn.textContent = 'A importar…'; }
   try {
     const form = new FormData();
