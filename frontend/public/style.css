@@ -79,6 +79,9 @@ html.dark .ajuda-query      { color: #8bb8d8; }
 html.dark .footer-principal { color: #6b7280; }
 html.dark .footer-rodape    { color: #4b5263; }
 
+html.dark .btn-pag.ativo        { background: #364a62; color: #dde0eb; border-color: #364a62; }
+html.dark .facetas-header       { background: #1e2638; color: #dde0eb; }
+
 /* Botão toggle modo escuro */
 .btn-dark-toggle {
   width: 34px; height: 34px;
