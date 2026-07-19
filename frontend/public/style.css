@@ -19,28 +19,28 @@
    MODO ESCURO
    ══════════════════════════════════════ */
 html.dark {
-  /* Superfícies e fundos */
-  --bg:           #0f1117;
-  --branco:       #1a1d2b;
-  --cinza-claro:  #252836;
+  /* Fundos — mais claros que antes para menos contraste agressivo */
+  --bg:           #1c1f2e;
+  --branco:       #252938;
+  --cinza-claro:  #2e3246;
 
-  /* Bordas e divisores */
-  --linha:        #2d3148;
+  /* Bordas */
+  --linha:        #363a52;
 
   /* Textos */
-  --texto:        #e2e4ed;
+  --texto:        #dde0eb;
   --texto-sub:    #8b92a8;
-  --cinza:        #6b7280;
+  --cinza:        #9aa0b4;
 
-  /* Cores de marca — mantêm-se iguais */
+  /* Marca */
   --laranja:      #F4794A;
   --laranja-soft: #6b3020;
 
   /* Superfícies de navegação */
-  --azul-escuro:  #111320;
-  --azul-medio:   #1e2a38;
+  --azul-escuro:  #161829;
+  --azul-medio:   #263448;
 
-  /* Tipos de registo — ligeiramente mais brilhantes para contrastar no escuro */
+  /* Tipos */
   --batismo:      #6a9ab8;
   --casamento:    #4aaa96;
   --obito:        #a07ab8;
@@ -48,23 +48,34 @@ html.dark {
 
 /* Correcções para cores hardcoded que não usam variáveis */
 
-/* Badges dos cards — cores fixas que ficam ilegíveis no escuro */
-html.dark .badge-batismo   { background: #1a2d3d; color: #7ab0d8; }
-html.dark .badge-casamento { background: #0d2820; color: #4aaa96; }
-html.dark .badge-obito     { background: #251535; color: #b07ad8; }
+/* Header: nome da plataforma e nav ficavam escuros */
+html.dark header            { color: #dde0eb; }
 
-/* Botão pesquisar */
-html.dark .btn-pesquisar { var(--cinza);}
+/* Stats bar: números dos totais ficavam invisíveis */
+html.dark .stat-valor       { color: #dde0eb; }
+
+/* Botão Pesquisar: fundo muito escuro, texto desaparecia */
+html.dark .btn-pesquisar    { background: #364a62; color: #dde0eb; }
+html.dark .btn-pesquisar:hover { background: #435a78; }
+
+/* Botão Ajuda: borda e texto */
+html.dark .btn-ajuda        { background: #252938; border-color: #363a52; color: #8b92a8; }
+html.dark .btn-ajuda:hover  { border-color: #6a9ab8; color: #6a9ab8; }
+
+/* Badges dos cards */
+html.dark .badge-batismo    { background: #1a2d3d; color: #7ab0d8; }
+html.dark .badge-casamento  { background: #0d2820; color: #4aaa96; }
+html.dark .badge-obito      { background: #251535; color: #b07ad8; }
 
 /* Botão federado */
-html.dark .btn-federado         { background: #1e2d45; }
+html.dark .btn-federado         { background: #1e2d45; color: #dde0eb; }
 html.dark .btn-federado:hover   { background: #263a58; }
 html.dark .btn-federado.activo  { background: #111e30; }
 
-/* Ajuda — query em monospace ficava escura sobre fundo escuro */
-html.dark .ajuda-query { color: #8bb8d8; }
+/* Ajuda: query em monospace */
+html.dark .ajuda-query      { color: #8bb8d8; }
 
-/* Footer — cores fixas que precisam de ajuste */
+/* Footer */
 html.dark .footer-principal { color: #6b7280; }
 html.dark .footer-rodape    { color: #4b5263; }
 
@@ -128,8 +139,6 @@ header {
   font-size: 0.95rem;
   font-weight: 600;
   letter-spacing: -0.01em;
-  /*color: #9aa3b0;*/
-  color: var(--cinza);
 }
 .logo-sub {
   font-size: 0.7rem;
@@ -150,7 +159,6 @@ header {
   border: none;
   transition: all 0.15s;
   background: transparent;
-  color: var(--cinza);
 }
 .btn-nav:hover { background: rgba(255,255,255,0.08); color: var(--branco); }
 .btn-nav.ativo { background: var(--laranja); color: var(--branco); }
