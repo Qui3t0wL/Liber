@@ -58,23 +58,13 @@
         <div class="btns-pesquisa">
           <button class="btn-pesquisar" onclick="pesquisar(1)">Pesquisar</button>
           <button class="btn-pesquisar btn-ia" id="btnIA" onclick="pesquisarIA(1)">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-              <path d="M12 2l2.4 7.4H22l-6.2 4.5 2.4 7.4L12 17l-6.2 4.3 2.4-7.4L2 9.4h7.6z"/>
-            </svg>
-            Pesquisa IA
+            ✦ Pesquisa IA
           </button>
           <button class="btn-pesquisar btn-federado" id="btnFederado"
                   onclick="toggleFederado()"
                   title="Pesquisar também noutros arquivos na rede"
                   style="display:none">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <circle cx="12" cy="5"  r="2"/>
-              <circle cx="5"  cy="19" r="2"/>
-              <circle cx="19" cy="19" r="2"/>
-              <line x1="12" y1="7"  x2="5"  y2="17"/>
-              <line x1="12" y1="7"  x2="19" y2="17"/>
-              <line x1="5"  y1="17" x2="19" y2="17"/>
-            </svg>
+            <span class="material-symbols-rounded">network_node</span>
             Rede
           </button>
           <button class="btn-ajuda" onclick="abrirAjuda()" title="Ajuda">?</button>
@@ -117,7 +107,7 @@
     </div>
 
     <button class="btn-filtrar-mobile" id="btnFiltrarMobile" onclick="abrirDrawer()" style="display:none">
-      ☰ Filtrar resultados
+      <span class="material-symbols-rounded">filter_alt</span> Filtrar resultados
       <span id="badgeFiltros" style="display:none;background:var(--laranja);color:#fff;border-radius:10px;padding:0.1rem 0.45rem;font-size:0.7rem"></span>
     </button>
 
