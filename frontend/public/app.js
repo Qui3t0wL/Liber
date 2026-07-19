@@ -298,7 +298,7 @@ function renderEstatisticas(freguesias, detalhadas) {
   cont.innerHTML = `
     <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:1rem;margin-bottom:1.5rem" class="stats-resumo-global">
       ${[
-        { label: 'Total de registos', valor: totalGeral, cor: 'var(--azul-escuro)' },
+        { label: 'Total de registos', valor: totalGeral, cor: 'var(--texto)' },
         { label: 'Batismos',   valor: totalB, cor: 'var(--batismo)' },
         { label: 'Casamentos', valor: totalC, cor: 'var(--casamento)' },
         { label: 'Óbitos',     valor: totalO, cor: 'var(--obito)' },
