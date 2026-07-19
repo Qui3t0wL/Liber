@@ -1,16 +1,22 @@
 version: "3.9"
 
 services:
-  backend:
+  backend-prod:
     build: ./backend
-    container_name: liber
-    restart: unless-stopped
+    container_name: liber-prod
     ports:
-      - "8000:8000"       # Expor apenas na rede local; não abrir no router para a Internet
+      - "8000:8000"
     volumes:
-      - ./data:/data      # Base de dados persistente
+      - ./data-prod:/data
       - ./frontend:/app/frontend:ro
-    env_file:
-      - .env
-    environment:
-      - DB_PATH=/data/registos.db
+    env_file: .env.prod
+
+  backend-dev:
+    build: ./backend
+    container_name: liber-dev
+    ports:
+      - "8001:8000"
+    volumes:
+      - ./data-dev:/data
+      - ./frontend:/app/frontend:ro
+    env_file: .env.dev
