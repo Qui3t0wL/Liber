@@ -159,6 +159,7 @@ header {
   border: none;
   transition: all 0.15s;
   background: transparent;
+  color: var(--cinza);
 }
 .btn-nav:hover { background: rgba(255,255,255,0.08); color: var(--branco); }
 .btn-nav.ativo { background: var(--laranja); color: var(--branco); }
