@@ -4,9 +4,12 @@ services:
   backend-dev:
     build: ./backend
     container_name: liber-dev
+    restart: unless-stopped
     ports:
       - "9000:8000"
     volumes:
       - ./data-dev:/data
       - ./frontend:/app/frontend:ro
     env_file: .env.dev
+    environment:
+      - DB_PATH=/data/registos.db
