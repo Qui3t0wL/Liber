@@ -1,5 +1,6 @@
 version: "3.9"
 
+services:
   backend-dev:
     build: ./backend
     container_name: liber-dev
