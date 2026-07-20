@@ -3,10 +3,10 @@ version: "3.9"
 services:
   backend-dev:
     build: ./backend
-    container_name: liber-dev
+    container_name: "${CONTAINER_NAME}"
     restart: unless-stopped
     ports:
-      - "9000:8000"
+      - "${PORT}:8000"
     volumes:
       - ./data:/data
       - ./frontend:/app/frontend:ro
