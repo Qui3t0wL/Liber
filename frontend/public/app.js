@@ -298,7 +298,7 @@ function renderEstatisticas(freguesias, detalhadas) {
   cont.innerHTML = `
     <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:1rem;margin-bottom:1.5rem" class="stats-resumo-global">
       ${[
-        { label: 'Total de registos', valor: totalGeral, cor: 'var(--azul-escuro)' },
+        { label: 'Total de registos', valor: totalGeral, cor: 'var(--texto)' },
         { label: 'Batismos',   valor: totalB, cor: 'var(--batismo)' },
         { label: 'Casamentos', valor: totalC, cor: 'var(--casamento)' },
         { label: 'Óbitos',     valor: totalO, cor: 'var(--obito)' },
@@ -908,5 +908,20 @@ function limparFiltros() {
   esconderInterpretacao();
   limparFacetas();
 }
+
+// ── Modo escuro ──────────────────────────────────────────────────────────────
+
+function toggleDark() {
+  const isDark = document.documentElement.classList.toggle('dark');
+  localStorage.setItem('dark', isDark ? '1' : '0');
+  const btn = document.getElementById('btnDarkToggle');
+  if (btn) btn.textContent = isDark ? '☀' : '🌙';
+}
+
+// Sincronizar ícone com o estado actual (o html.dark já foi aplicado pelo script inline)
+document.addEventListener('DOMContentLoaded', () => {
+  const btn = document.getElementById('btnDarkToggle');
+  if (btn) btn.textContent = document.documentElement.classList.contains('dark') ? '☀' : '🌙';
+});
 
 init();

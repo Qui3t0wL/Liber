@@ -1,4 +1,4 @@
-# Liber - Registos Paroquiais
+<img src="frontend/public/favicon.svg" width="30" alt="Liber" align="left"> **Liber · Registos Paroquiais**
 
 Arquivo digital de batismos, casamentos e óbitos com interface de pesquisa pública
 e área de administração para importação de ficheiros Excel.
@@ -58,7 +58,7 @@ docker compose up -d
 
 A aplicação fica disponível em `http://localhost:8000`.
 
-A base de dados é guardada na pasta `data/` do projecto, persistindo entre reinícios.
+A base de dados é guardada na pasta `data/` do projeto, persistindo entre reinícios.
 
 ---
 
@@ -67,8 +67,8 @@ A base de dados é guardada na pasta `data/` do projecto, persistindo entre rein
 ### Interface pública (pesquisa)
 Acessível em `http://<ip-do-servidor>:8000`
 
-Para expor à Internet, configure o router para reencaminhar a porta 8000,
-ou use um reverse proxy (nginx/Caddy) com HTTPS.
+Para expor à Internet, configure o _router_ para reencaminhar a porta 8000,
+ou use um _reverse proxy_ (nginx/Caddy) com HTTPS.
 
 ### Interface de administração
 Acessível em `http://<ip-do-servidor>:8000/admin`
@@ -77,7 +77,7 @@ Acessível em `http://<ip-do-servidor>:8000/admin`
 de IPs externos com erro 403. A verificação é feita nos prefixos
 `127.`, `192.168.`, `10.` e `172.`.
 
-Se usar um reverse proxy (ex: nginx), adicione também uma regra para
+Se usar um _reverse proxy_ (ex: nginx), adicione também uma regra para
 bloquear o acesso externo a `/admin`:
 
 ```nginx
@@ -94,35 +94,41 @@ location /admin {
 
 ## Variáveis de ambiente
 
-Criar um ficheiro `.env` na raiz do projecto:
+Criar um ficheiro `.env` na raiz do projeto:
 
 ```env
-ANTHROPIC_API_KEY=sk-ant-...   # Necessário para pesquisa IA (opcional)
+CONTAINER_NAME=liber           # Nome do container
+PORT=8000                      # Porta aberta do lado do servidor
 DB_PATH=/data/registos.db      # Caminho para a base de dados (default: registos.db)
+ANTHROPIC_API_KEY=sk-ant-...   # Necessário para pesquisa IA (opcional)
+NO_NOME=                       # Nome do nó (opcional) - usado para federar nós
+NO_DESCRICAO=                  # Descrição do nó (opcional) - usado para federar nós
+NO_REGIAO=                     # Região do Nó (opcional) - usado para federar nós
+NO_URL=                        # Endereço URL do nó (opcional) - usado para federar nós
 ```
 
 A pesquisa IA fica indisponível sem a chave API — a interface oculta automaticamente
-o botão correspondente e o fallback por padrões regex é utilizado no endpoint `/api/pesquisar-ia`.
+o botão correspondente e o _fallback_ por padrões regex é utilizado no endpoint `/api/pesquisar-ia`.
 
 ---
 
 ## Importação de dados
 
 1. Aceda a `http://<servidor>/admin` (na rede local)
-2. Seleccione o **tipo de registo** (Batismos / Casamentos / Óbitos)
+2. Selecione o **tipo de registo** (Batismos / Casamentos / Óbitos)
 3. Indique a **freguesia** — o campo tem autocomplete com as freguesias já importadas
 4. Carregue o ficheiro Excel
 5. Clique em **Validar ficheiro** — o sistema analisa todas as folhas e apresenta um relatório com:
    - Número de registos encontrados
    - Avisos (campos em falta, anos fora do intervalo esperado, colunas não reconhecidas)
    - Erros críticos (colunas obrigatórias em falta)
-   - Duplicados detectados (dentro do ficheiro e face à base de dados)
+   - Duplicados detetados (dentro do ficheiro e face à base de dados)
 6. Se não houver erros críticos, clique em **Importar**
 
-### Modo de actualização
+### Modo de atualização
 
-Por omissão, registos duplicados são ignorados na importação. Activando a opção
-**"Actualizar registos existentes"**, o sistema actualiza os registos já existentes
+Por omissão, registos duplicados são ignorados na importação. Ativando a opção
+**"Atualizar registos existentes"**, o sistema atualiza os registos já existentes
 na base de dados em vez de os descartar, usando como chave de identificação a
 referência de arquivo (`FONTE` + `Nº ORDEM`) ou, na sua ausência, os campos
 biográficos (nome, ano, pai, mãe).
@@ -166,7 +172,7 @@ A interface pública permite pesquisar por texto livre. A pesquisa é:
 - Insensível a maiúsculas e minúsculas
 - Insensível a acentos (ex: "Jose" encontra "José")
 - Multi-termo com três níveis de relevância:
-  1. Frase exacta ("José Alves" encontra "José Alves Bento")
+  1. Frase exata ("José Alves" encontra "José Alves Bento")
   2. Tokens pela ordem com palavras no meio ("José Alves" encontra "José Maria Alves")
   3. Todos os tokens presentes em qualquer ordem
 
@@ -176,7 +182,7 @@ Campos pesquisados por tipo:
 - **Óbitos:** nome, pai, mãe, notas
 
 ### Pesquisa IA (linguagem natural)
-O botão **✦ Pesquisa IA** envia a query para o Claude Haiku, que extrai campos
+O botão **Pesquisa IA** envia a query para o Claude Haiku, que extrai campos
 estruturados e os traduz em filtros de pesquisa. Exemplos:
 
 | Query | Interpretação |
@@ -188,8 +194,8 @@ estruturados e os traduz em filtros de pesquisa. Exemplos:
 | `óbitos no século XIX` | `tipo=obito, ano_min=1800, ano_max=1899` |
 
 O botão é ocultado automaticamente se o endpoint não estiver acessível (fora da rede local
-ou sem chave API configurada). Nesse caso, um parser por padrões regex é utilizado como
-fallback no servidor.
+ou sem chave API configurada). Nesse caso, um _parser_ por padrões regex é utilizado como
+_fallback_ no servidor.
 
 ### Filtros manuais
 Combinam com qualquer pesquisa:
@@ -199,7 +205,7 @@ Combinam com qualquer pesquisa:
 
 ### Facetas dinâmicas
 Após uma pesquisa com mais de um resultado, surge um painel lateral (desktop)
-ou drawer (mobile) com filtros adicionais sobre os resultados já obtidos:
+ou _drawer_ (mobile) com filtros adicionais sobre os resultados já obtidos:
 - Tipo de registo
 - Localidade
 - Pai / Mãe
@@ -224,7 +230,7 @@ A vista de estatísticas (separador no cabeçalho) apresenta:
 
 A aplicação implementa um conjunto de controlos de segurança baseados nas recomendações OWASP:
 
-### Rate limiting
+### _Rate limiting_
 Limites por IP com bloqueio automático de 5 minutos após exceder o limite:
 
 | Endpoint | Limite |
@@ -236,13 +242,13 @@ Limites por IP com bloqueio automático de 5 minutos após exceder o limite:
 
 ### Validação de inputs
 - Limite de 500 caracteres por campo
-- Detecção de padrões maliciosos: SQL injection, XSS, path traversal, LFI, template injection
+- Deteção de padrões maliciosos: SQL injection, XSS, path traversal, LFI, template injection
 - Validação de tipos de registo, anos e números de página
 
 ### Validação de ficheiros
 - Apenas `.xlsx` e `.xls`
 - Tamanho máximo: 50 MB
-- Verificação de magic bytes (conteúdo real, não apenas extensão)
+- Verificação de _magic bytes_ (conteúdo real, não apenas extensão)
 
 ### Headers de segurança HTTP
 ```
@@ -258,32 +264,33 @@ Permissions-Policy: geolocation=(), microphone=(), camera=()
 Todos os acessos são registados na base de dados (excluindo `/static` e `/favicon`).
 A área de admin apresenta:
 - Acessos por IP (últimos 90 dias): total, pesquisas, acessos admin, primeiro e último acesso
-- Actividade diária (últimos 30 dias) com gráfico de barras
+- Atividade diária (últimos 30 dias) com gráfico de barras
 - Endpoints mais acedidos
 - Eventos suspeitos (status 403, 429, 5xx)
 
 Os registos de auditoria são limpos automaticamente após 90 dias.
 
 ### Outros controlos
-- Documentação da API (`/docs`, `/redoc`) desactivada
+- Documentação da API (`/docs`, `/redoc`) desativada
 - Área de admin restrita a IPs de rede local
-- Logs de segurança com nível WARNING para eventos suspeitos (rate limit, padrões maliciosos, acesso externo a admin)
+- Logs de segurança com nível WARNING para eventos suspeitos (_rate limit_, padrões maliciosos, acesso externo a admin)
 
 ---
 
 ## Interface
 
 ### Público
-- Barra de estatísticas clicável no topo (filtra directamente por tipo)
-- Disclaimer sobre consulta do registo original
+- Barra de estatísticas clicável no topo (filtra diretamente por tipo)
+- _Disclaimer_ sobre consulta do registo original
+- Modo escuro activado por botão no cabeçalho (🌙 / ☀), com memória da preferência do utilizador entre sessões e deteção automática da preferência do sistema operativo na primeira visita
 - Modal de detalhe com todos os campos organizados por secções
 - Destaque dos termos pesquisados nos resultados
 - Guia de ajuda integrado com exemplos de pesquisa IA
 - Totalmente responsiva: desktop, tablet, mobile (≤640 px e ≤375 px)
 
 ### Administração
-- Upload com drag & drop e relatório de validação antes de confirmar
-- Campo de freguesia com autocomplete (sugere as já importadas)
+- Upload com _drag & drop_ e relatório de validação antes de confirmar
+- Campo de freguesia com _autocomplete_ (sugere as já importadas)
 - Histórico de importações com tipo, período e número de registos
 - Reset da base de dados com dupla confirmação
 - Painel de auditoria de acessos
