@@ -1,3 +1,10 @@
+<table border="0" cellpadding="0" cellspacing="0">
+  <tr>
+    <td><img src="frontend/public/favicon.svg" width="48" alt="Liber"></td>
+    <td><h1>&nbsp;Liber · Registos Paroquiais</h1></td>
+  </tr>
+</table>
+
 <img src="frontend/public/favicon.svg" width="40" alt="Liber" align="left">
 
 # Liber · Registos Paroquiais
