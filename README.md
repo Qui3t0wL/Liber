@@ -101,6 +101,10 @@ ANTHROPIC_API_KEY=sk-ant-...   # Necessário para pesquisa IA (opcional)
 CONTAINER_NAME=liber           # Nome do container
 PORT=8000                      # Porta aberta do lado do servidor
 DB_PATH=/data/registos.db      # Caminho para a base de dados (default: registos.db)
+NO_NOME=                       # Nome do nó (opcional) - usado para federar nós
+NO_DESCRICAO=                  # Descrição do nó (opcional) - usado para federar nós
+NO_REGIAO=                     # Região do Nó (opcional) - usado para federar nós
+NO_URL=                        # Endereço URL do nó (opcional) - usado para federar nós
 ```
 
 A pesquisa IA fica indisponível sem a chave API — a interface oculta automaticamente
