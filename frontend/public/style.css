@@ -328,7 +328,7 @@ header {
   cursor: pointer;
   transition: all 0.15s;
   flex-shrink: 0;
-  align-self: flex-start; /* adicionado */
+  align-self: center; /* adicionado */
 }
 .btn-ajuda:hover { border-color: var(--azul-medio); color: var(--azul-medio); }
 
