@@ -1,4 +1,4 @@
-<img src="frontend/public/favicon.svg" width="30" alt="Liber" align="left"> <h3>**Liber · Registos Paroquiais**</h3>
+<img src="frontend/public/favicon.svg" width="30" alt="Liber" align="left"> <span style="font-size: 20px;">**Liber · Registos Paroquiais**</span>
 
 Arquivo digital de batismos, casamentos e óbitos com interface de pesquisa pública
 e área de administração para importação de ficheiros Excel.
