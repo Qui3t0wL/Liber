@@ -276,6 +276,7 @@ Os registos de auditoria são limpos automaticamente após 90 dias.
 ### Público
 - Barra de estatísticas clicável no topo (filtra directamente por tipo)
 - Disclaimer sobre consulta do registo original
+- Modo escuro activado por botão no cabeçalho (🌙 / ☀), com memória da preferência do utilizador entre sessões e detecção automática da preferência do sistema operativo na primeira visita
 - Modal de detalhe com todos os campos organizados por secções
 - Destaque dos termos pesquisados nos resultados
 - Guia de ajuda integrado com exemplos de pesquisa IA
