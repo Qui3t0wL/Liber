@@ -1,7 +1,7 @@
 version: "3.9"
 
 services:
-  backend-dev:
+  backend:
     build: ./backend
     container_name: "${CONTAINER_NAME}"
     restart: unless-stopped
