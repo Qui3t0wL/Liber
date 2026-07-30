@@ -81,6 +81,7 @@ html.dark .footer-rodape    { color: #4b5263; }
 
 html.dark .btn-pag.ativo        { background: #364a62; color: #dde0eb; border-color: #364a62; }
 html.dark .facetas-header       { background: #1e2638; color: #dde0eb; }
+html.dark .card-ano { color: #7ab0d8; }
 
 /* Chips da barra de estado federado */
 html.dark .fed-chip             { background: rgba(106,154,184,0.15); color: #7ab0d8; }
