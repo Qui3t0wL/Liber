@@ -39,7 +39,6 @@ async function carregarFooter() {
     const d = await r.json();
     const el = document.getElementById('footerTexto');
     if (d.footer_texto) {
-      // Converter URLs simples em links clicáveis
       el.innerHTML = d.footer_texto.replace(
         /(https?:\/\/[^\s]+)/g,
         '<a href="$1" target="_blank" rel="noopener" style="color:var(--cinza);text-decoration:underline;text-underline-offset:2px">$1</a>'
@@ -98,19 +97,18 @@ function filtrarTipo(tipo) {
   pesquisar(1);
 }
 
-// ── Verificar se há nós activos (decide se o botão aparece) ──────────────────
+// ── Federação ─────────────────────────────────────────────────────────────────
+
 async function verificarNosFederados() {
   try {
     const r = await fetch('/api/pesquisar-federado?por_pagina=1');
     const d = await r.json();
-    // nos_consultados inclui o local; só mostrar se houver pelo menos 1 remoto
     if ((d.nos_consultados || 1) > 1) {
       document.getElementById('btnFederado').style.display = 'flex';
     }
   } catch(e) {}
 }
 
-// ── Toggle do modo federado ───────────────────────────────────────────────────
 function toggleFederado() {
   modoFederado = !modoFederado;
   const btn = document.getElementById('btnFederado');
@@ -118,37 +116,33 @@ function toggleFederado() {
   btn.title = modoFederado
     ? 'A pesquisar em toda a rede — clique para desactivar'
     : 'Pesquisar também noutros arquivos na rede';
-  // Refazer a pesquisa com o novo modo se já houver resultados
   if (todosResultados.length > 0 ||
       document.getElementById('campoPesquisa').value.trim()) {
     pesquisar(1);
   }
 }
 
-// ── Pesquisa federada (chama o endpoint agregador) ────────────────────────────
 async function _fetchFederado(params) {
   const r = await fetch(`/api/pesquisar-federado?${params}`);
   return await r.json();
 }
 
-// ── Barra de estado da federação ─────────────────────────────────────────────
 function mostrarEstadoFederado(d) {
   const el       = document.getElementById('federadoEstado');
   const nosErro  = d.nos_com_erro || [];
   const nRemoto  = (d.nos_consultados || 1) - 1;
   const nOk      = nRemoto - nosErro.length;
-  const ICONE_REDE = '<span class="material-symbols-outlined" style="font-size:14px;line-height:1;vertical-align:middle">network_node</span>';
 
   const chips = [
     `<span class="fed-chip">📖 Este arquivo</span>`,
     ...Array.from({length: nOk}, (_, i) =>
-      `<span class="fed-chip">${ICONE_REDE} Nó ${i + 1}</span>`),
+      `<span class="fed-chip">📡 Nó ${i + 1}</span>`),
     ...nosErro.map(n =>
       `<span class="fed-chip erro" title="${n.erro}">✕ ${n.nome}</span>`),
   ].join('');
 
   el.innerHTML = `
-    <span  class="fed-estado-label">${ICONE_REDE} Rede</span>
+    <span style="color:var(--azul-medio);font-weight:500">📡 Rede</span>
     <span style="color:var(--linha)">·</span>
     ${chips}
     ${nosErro.length
@@ -165,7 +159,6 @@ function esconderEstadoFederado() {
 
 function _criarCard(reg, q) {
   const card = document.createElement('div');
-  const ICONE_REDE = '<span class="material-symbols-outlined" style="font-size:14px;line-height:1;vertical-align:middle">network_node</span>';
   card.className = 'card';
   card.dataset.tipo = reg.tipo;
 
@@ -177,7 +170,7 @@ function _criarCard(reg, q) {
   if (pais) detalhes.push(`Fil. ${pais}`);
 
   const origemHtml = (modoFederado && reg._no && !reg._no.local)
-    ? `<div class="card-origem">${ICONE_REDE} ${reg._no.nome}</div>`
+    ? `<div class="card-origem">📡 ${reg._no.nome}</div>`
     : '';
 
   card.innerHTML = `
@@ -198,23 +191,16 @@ function _criarCard(reg, q) {
   });
   return card;
 }
-// ── Detalhe de registo remoto ─────────────────────────────────────────────────
+
 async function _abrirDetalheRemoto(reg) {
   try {
-    // Usa o endpoint federado autenticado do nó remoto
-    // O token já está guardado no servidor — o nosso backend actua como proxy
     const r = await fetch(
       `${reg._no.url}/api/registo-federado/${reg.tipo}/${reg.id}`,
-      // Nota: o token NÃO é enviado pelo browser directamente.
-      // Para maior segurança, criar um endpoint proxy no backend local:
-      // GET /api/proxy-registo?no_url=...&tipo=...&id=...
-      // que adiciona o token server-side. Ver INTEGRACAO.md.
     );
     if (!r.ok) throw new Error(`HTTP ${r.status}`);
     const dados = await r.json();
     _renderModalRemoto(reg, dados);
   } catch(e) {
-    // Fallback: tentar via proxy local
     try {
       const r = await fetch(
         `/api/registo-proxy?url=${encodeURIComponent(reg._no.url)}&tipo=${reg.tipo}&id=${reg.id}`
@@ -230,11 +216,10 @@ async function _abrirDetalheRemoto(reg) {
 
 function _renderModalRemoto(reg, dados) {
   const tipoLabel = { batismo:'Batismo', casamento:'Casamento', obito:'Óbito' }[reg.tipo];
-  const ICONE_REDE = '<span class="material-symbols-outlined" style="font-size:14px;line-height:1;vertical-align:middle">network_node</span>';
   document.getElementById('modalTipoBadge').innerHTML = `
     <span class="badge badge-${reg.tipo}">${tipoLabel}</span>
     <span style="font-size:0.68rem;color:var(--texto-sub);margin-left:0.4rem">
-      ${ICONE_REDE} ${reg._no?.nome || reg._no?.url}
+      📡 ${reg._no?.nome || reg._no?.url}
     </span>`;
 
   let titulo = reg.tipo === 'casamento'
@@ -263,17 +248,16 @@ function _renderModalRemoto(reg, dados) {
     corpo.appendChild(secDiv);
   });
 
-  // Rodapé com origem
   const nota = document.createElement('div');
   nota.className = 'modal-origem';
-  nota.innerHTML = `${ICONE_REDE} Registo proveniente de
+  nota.innerHTML = `📡 Registo proveniente de
     <a href="${reg._no.url}" target="_blank" rel="noopener">${reg._no.nome}</a>`;
   corpo.appendChild(nota);
 
   document.getElementById('overlay').classList.add('aberto');
   document.body.style.overflow = 'hidden';
 }
-  
+
 // ── Estatísticas ──────────────────────────────────────────────────────────────
 
 async function carregarGraficos() {
@@ -301,7 +285,7 @@ function renderEstatisticas(freguesias, detalhadas) {
   cont.innerHTML = `
     <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:1rem;margin-bottom:1.5rem" class="stats-resumo-global">
       ${[
-        { label: 'Total de registos', valor: totalGeral, cor: 'var(--texto)' },
+        { label: 'Total de registos', valor: totalGeral, cor: 'var(--azul-escuro)' },
         { label: 'Batismos',   valor: totalB, cor: 'var(--batismo)' },
         { label: 'Casamentos', valor: totalC, cor: 'var(--casamento)' },
         { label: 'Óbitos',     valor: totalO, cor: 'var(--obito)' },
@@ -430,7 +414,6 @@ async function pesquisar(pagina) {
   try {
     let d;
     if (modoFederado) {
-      // Limitar por_pagina no modo federado (agrega de vários nós)
       params.set('por_pagina', 200);
       d = await _fetchFederado(params);
       mostrarEstadoFederado(d);
@@ -483,7 +466,7 @@ function mostrarInterpretacao(filtros, usouIA) {
   const etiquetas = {
     nome:'Nome', pai:'Pai', mae:'Mãe', noivo:'Noivo', noiva:'Noiva',
     testemunha:'Testemunha', local:'Local', tipo:'Tipo',
-    fonte:'Fonte', ano_min:'De', ano_max:'Até' /* alterei o 'Desde' para 'De' */
+    fonte:'Fonte', ano_min:'De', ano_max:'Até'
   };
   const chips = Object.entries(filtros)
     .map(([k,v]) => `<span class="ia-chip"><span>${etiquetas[k]||k}:</span>${v}</span>`)
@@ -539,7 +522,8 @@ function renderResultados(d, q) {
       layout.classList.add('sem-facetas');
     }
     btnMobile.style.display = 'flex';
-    renderFacetas(todosResultados);
+    // ── CASCATA: inicializar facetas com todos os resultados ──
+    renderFacetas(todosResultados, todosResultados);
   }
 
   info.style.display = 'flex';
@@ -558,7 +542,6 @@ function renderCards(resultados) {
   lista.innerHTML = '';
 
   if (modoFederado) {
-    // Agrupar por arquivo de origem
     const grupos = new Map();
     resultados.forEach(r => {
       const chave = r._no?.url || 'local';
@@ -588,7 +571,7 @@ function renderCards(resultados) {
     resultados.forEach(reg => lista.appendChild(_criarCard(reg, q)));
   }
 }
-  
+
 function destacar(texto, q) {
   if (!q || !texto) return texto;
   const termos = q.trim().split(/\s+/).map(t => t.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'));
@@ -596,34 +579,72 @@ function destacar(texto, q) {
     '<mark style="background:#fde8a0;padding:0 1px;border-radius:2px">$1</mark>');
 }
 
-// ── Facetas ───────────────────────────────────────────────────────────────────
+// ── Facetas em cascata ────────────────────────────────────────────────────────
+//
+// A ideia central: para cada grupo de facetas, calcular os valores disponíveis
+// aplicando TODOS os outros filtros activos — excepto o do próprio grupo.
+// Isso replica o comportamento do AutoFiltro do Excel: ao filtrar por "Pai",
+// os valores de "Mãe" estreitam-se para mostrar apenas as mães que coexistem
+// com o pai seleccionado.
 
-function calcularFacetas(resultados) {
-  const facetas = { tipo:{}, local:{}, pai:{}, mae:{} };
-  resultados.forEach(r => {
-    facetas.tipo[r.tipo] = (facetas.tipo[r.tipo] || 0) + 1;
-    if (r.local && r.local !== 'n/d') facetas.local[r.local] = (facetas.local[r.local] || 0) + 1;
-    if (r.pai   && r.pai   !== 'n/d') facetas.pai[r.pai]     = (facetas.pai[r.pai]     || 0) + 1;
-    if (r.mae   && r.mae   !== 'n/d') facetas.mae[r.mae]     = (facetas.mae[r.mae]     || 0) + 1;
+/**
+ * Aplica todos os filtros activos excepto os do grupo indicado.
+ * Usado para calcular os valores disponíveis em cascata.
+ */
+function _filtrarExcluindoGrupo(grupoExcluido) {
+  return todosResultados.filter(r => {
+    const ano = r.ano || 0;
+    if (ano && (ano < anoMinActivo || ano > anoMaxActivo)) return false;
+
+    for (const [grupo, valores] of Object.entries(facetasActivas)) {
+      if (grupo === grupoExcluido) continue; // ignorar o próprio grupo
+      if (valores.size === 0) continue;
+      let match = false;
+      if (grupo === 'tipo')  match = valores.has(r.tipo);
+      if (grupo === 'local') match = valores.has(r.local);
+      if (grupo === 'pai')   match = valores.has(r.pai);
+      if (grupo === 'mae')   match = valores.has(r.mae);
+      if (!match) return false;
+    }
+    return true;
   });
-  return facetas;
 }
 
-function renderFacetas(resultados) {
-  const facetas = calcularFacetas(resultados);
-  const anos = resultados.map(r => r.ano).filter(Boolean);
+/**
+ * Calcula os valores disponíveis para um grupo de facetas,
+ * tendo em conta os filtros dos outros grupos (cascata).
+ */
+function _calcularValoresGrupo(grupo, resultadosFiltrados) {
+  const contagem = {};
+  resultadosFiltrados.forEach(r => {
+    let val = null;
+    if (grupo === 'tipo')  val = r.tipo;
+    if (grupo === 'local') val = r.local;
+    if (grupo === 'pai')   val = r.pai;
+    if (grupo === 'mae')   val = r.mae;
+    if (val && val !== 'n/d') {
+      contagem[val] = (contagem[val] || 0) + 1;
+    }
+  });
+  return contagem;
+}
+
+function renderFacetas(resultadosFiltrados, _ignorado) {
+  // Para cada grupo, calcular valores disponíveis excluindo o filtro desse grupo
+  // (para que o utilizador possa ver e alterar a sua própria selecção)
+  const anos = todosResultados.map(r => r.ano).filter(Boolean);
   anoMinGlobal = anos.length ? Math.min(...anos) : 1500;
   anoMaxGlobal = anos.length ? Math.max(...anos) : 2100;
   if (anoMinActivo === 1500) anoMinActivo = anoMinGlobal;
   if (anoMaxActivo === 2100) anoMaxActivo = anoMaxGlobal;
 
-  const tipoLabels = { batismo:'Batismo', casamento:'Casamento', obito:'Óbito' };
   const grupos = [
-    { id:'tipo',  titulo:'Tipo de registo', items: Object.entries(facetas.tipo).sort((a,b)=>b[1]-a[1]).map(([k,v])=>({valor:k, label:tipoLabels[k]||k, count:v})) },
-    { id:'local', titulo:'Localidade',      items: Object.entries(facetas.local).sort((a,b)=>b[1]-a[1]).slice(0,20).map(([k,v])=>({valor:k, label:k, count:v})) },
-    { id:'pai',   titulo:'Pai',             items: Object.entries(facetas.pai).sort((a,b)=>b[1]-a[1]).slice(0,20).map(([k,v])=>({valor:k, label:k, count:v})) },
-    { id:'mae',   titulo:'Mãe',             items: Object.entries(facetas.mae).sort((a,b)=>b[1]-a[1]).slice(0,20).map(([k,v])=>({valor:k, label:k, count:v})) },
-  ]; /*alterei todas as slices para terem 20 resultados. Antes tinham 15,10,10 */
+    { id: 'tipo',  titulo: 'Tipo de registo',
+      labels: { batismo:'Batismo', casamento:'Casamento', obito:'Óbito' } },
+    { id: 'local', titulo: 'Localidade',  labels: {} },
+    { id: 'pai',   titulo: 'Pai',         labels: {} },
+    { id: 'mae',   titulo: 'Mãe',         labels: {} },
+  ];
 
   const html = `
     <div class="faceta-grupo">
@@ -636,37 +657,60 @@ function renderFacetas(resultados) {
             <span id="sliderMinVal">${anoMinActivo}</span>
             <span id="sliderMaxVal">${anoMaxActivo}</span>
           </div>
-          <input type="range" id="sliderMin" min="${anoMinGlobal}" max="${anoMaxGlobal}" value="${anoMinActivo}" oninput="actualizarSlider('min',this.value)">
-          <input type="range" id="sliderMax" min="${anoMinGlobal}" max="${anoMaxGlobal}" value="${anoMaxActivo}" oninput="actualizarSlider('max',this.value)">
+          <input type="range" id="sliderMin" min="${anoMinGlobal}" max="${anoMaxGlobal}"
+                 value="${anoMinActivo}" oninput="actualizarSlider('min',this.value)">
+          <input type="range" id="sliderMax" min="${anoMinGlobal}" max="${anoMaxGlobal}"
+                 value="${anoMaxActivo}" oninput="actualizarSlider('max',this.value)">
         </div>
       </div>
     </div>
-    ${grupos.map(g => g.items.length === 0 ? '' : `
-      <div class="faceta-grupo">
-        <div class="faceta-titulo" onclick="toggleFaceta('${g.id}')">
-          ${g.titulo} <span class="faceta-titulo-seta fechado" id="seta-${g.id}">▾</span>
-        </div>
-        <div class="faceta-lista fechada" id="lista-${g.id}">
-          ${g.items.map(item => {
-            const activo = (facetasActivas[g.id] || new Set()).has(item.valor);
-            return `<label class="faceta-item ${activo?'activo':''}">
-              <input type="checkbox" ${activo?'checked':''} onchange="toggleFiltro('${g.id}','${item.valor.replace(/'/g,"\\'")}')">
-              <span class="faceta-item-label" title="${item.label}">${item.label}</span>
-              <span class="faceta-item-count">${item.count}</span>
-            </label>`;
-          }).join('')}
-        </div>
-      </div>`).join('')}`;
+    ${grupos.map(g => {
+      // Valores disponíveis para este grupo = resultados filtrados por TODOS os outros grupos
+      const disponiveis = _calcularValoresGrupo(g.id, _filtrarExcluindoGrupo(g.id));
+      const items = Object.entries(disponiveis)
+        .sort((a, b) => b[1] - a[1])
+        .slice(0, 20)
+        .map(([k, v]) => ({ valor: k, label: g.labels[k] || k, count: v }));
+
+      if (items.length === 0) return '';
+
+      const activos = facetasActivas[g.id] || new Set();
+
+      return `
+        <div class="faceta-grupo">
+          <div class="faceta-titulo" onclick="toggleFaceta('${g.id}')">
+            ${g.titulo}
+            ${activos.size > 0
+              ? `<span class="faceta-badge-activo">${activos.size}</span>`
+              : ''}
+            <span class="faceta-titulo-seta fechado" id="seta-${g.id}">▾</span>
+          </div>
+          <div class="faceta-lista fechada" id="lista-${g.id}">
+            ${items.map(item => {
+              const activo = activos.has(item.valor);
+              // Desactivado = existe noutros resultados mas não nos filtrados actuais
+              const disponivel = item.count > 0;
+              return `<label class="faceta-item ${activo ? 'activo' : ''} ${!disponivel ? 'indisponivel' : ''}">
+                <input type="checkbox" ${activo ? 'checked' : ''}
+                       onchange="toggleFiltro('${g.id}','${item.valor.replace(/'/g,"\\'")}')">
+                <span class="faceta-item-label" title="${item.label}">${item.label}</span>
+                <span class="faceta-item-count">${item.count}</span>
+              </label>`;
+            }).join('')}
+          </div>
+        </div>`;
+    }).join('')}`;
 
   document.getElementById('facetasConteudo').innerHTML = html;
   document.getElementById('facetasDrawer').innerHTML   = html;
 }
 
 function toggleFaceta(id) {
-  ['', 'Drawer'].forEach(suffix => {
-    const cont = suffix ? document.getElementById('facetasDrawer') : null;
-    const lista = cont ? cont.querySelector(`#lista-${id}`) : document.getElementById(`lista-${id}`);
-    const seta  = cont ? cont.querySelector(`#seta-${id}`)  : document.getElementById(`seta-${id}`);
+  ['facetasConteudo', 'facetasDrawer'].forEach(contId => {
+    const cont = document.getElementById(contId);
+    if (!cont) return;
+    const lista = cont.querySelector(`#lista-${id}`);
+    const seta  = cont.querySelector(`#seta-${id}`);
     if (lista) lista.classList.toggle('fechada');
     if (seta)  seta.classList.toggle('fechado');
   });
@@ -685,16 +729,13 @@ function actualizarSlider(tipo, val) {
   val = parseInt(val);
   if (tipo === 'min') anoMinActivo = Math.min(val, anoMaxActivo);
   else                anoMaxActivo = Math.max(val, anoMinActivo);
-  document.getElementById('sliderMinVal').textContent = anoMinActivo;
-  document.getElementById('sliderMaxVal').textContent = anoMaxActivo;
-  document.getElementById('sliderMin').value = anoMinActivo;
-  document.getElementById('sliderMax').value = anoMaxActivo;
   paginaAtual = 1;
   aplicarFacetas();
 }
 
 function aplicarFacetas() {
-  let filtrados = todosResultados.filter(r => {
+  // Filtrar resultados com TODOS os filtros activos
+  const filtrados = todosResultados.filter(r => {
     const ano = r.ano || 0;
     if (ano && (ano < anoMinActivo || ano > anoMaxActivo)) return false;
     for (const [grupo, valores] of Object.entries(facetasActivas)) {
@@ -709,11 +750,11 @@ function aplicarFacetas() {
     return true;
   });
 
-  const nFiltros = Object.values(facetasActivas).reduce((s,v) => s + v.size, 0)
+  const nFiltros = Object.values(facetasActivas).reduce((s, v) => s + v.size, 0)
     + (anoMinActivo > anoMinGlobal || anoMaxActivo < anoMaxGlobal ? 1 : 0);
   const badge = document.getElementById('badgeFiltros');
-  badge.textContent    = nFiltros;
-  badge.style.display  = nFiltros > 0 ? 'inline' : 'none';
+  badge.textContent   = nFiltros;
+  badge.style.display = nFiltros > 0 ? 'inline' : 'none';
 
   const total   = filtrados.length;
   const totalOr = todosResultados.length;
@@ -726,9 +767,13 @@ function aplicarFacetas() {
     : `${inicio} – ${fim} de ${total.toLocaleString('pt-PT')} filtrados (${totalOr.toLocaleString('pt-PT')} no total)`;
   document.getElementById('textoFiltrados').style.display = 'none';
 
-  renderCards(filtrados.slice((paginaAtual-1)*POR_PAGINA, paginaAtual*POR_PAGINA));
+  renderCards(filtrados.slice((paginaAtual - 1) * POR_PAGINA, paginaAtual * POR_PAGINA));
   renderPaginacaoCliente(total);
-  renderFacetas(todosResultados);
+
+  // ── CASCATA: re-renderizar facetas com base nos resultados filtrados ──
+  // Passa os filtrados para que cada grupo saiba o contexto actual,
+  // mas internamente cada grupo exclui o próprio filtro ao calcular os valores.
+  renderFacetas(filtrados);
 }
 
 function limparFacetas() {
@@ -746,13 +791,13 @@ function renderPaginacaoCliente(total) {
   const atual   = paginaAtual;
   const paginas = [1];
   if (atual > 3) paginas.push('...');
-  for (let p = Math.max(2, atual-1); p <= Math.min(nPaginas-1, atual+1); p++) paginas.push(p);
-  if (atual < nPaginas-2) paginas.push('...');
+  for (let p = Math.max(2, atual - 1); p <= Math.min(nPaginas - 1, atual + 1); p++) paginas.push(p);
+  if (atual < nPaginas - 2) paginas.push('...');
   if (nPaginas > 1) paginas.push(nPaginas);
   cont.innerHTML = paginas.map(p =>
     p === '...'
       ? `<span style="padding:0.35rem 0.3rem;color:var(--cinza)">…</span>`
-      : `<button class="btn-pag ${p===atual?'ativo':''}" onclick="mudarPagina(${p})">${p}</button>`
+      : `<button class="btn-pag ${p === atual ? 'ativo' : ''}" onclick="mudarPagina(${p})">${p}</button>`
   ).join('');
 }
 
@@ -842,7 +887,7 @@ async function abrirDetalhe(tipo, id) {
     document.getElementById('modalTipoBadge').innerHTML =
       `<span class="badge badge-${tipo}">${tipoLabel}</span>`;
     let titulo = tipo === 'casamento'
-      ? `${reg.noivo||'—'} & ${reg.noiva||'—'}`
+      ? `${reg.noivo || '—'} & ${reg.noiva || '—'}`
       : (reg.nome || '—');
     if (reg.ano) titulo += ` · ${reg.ano}`;
     document.getElementById('modalTitulo').textContent = titulo;
@@ -858,7 +903,7 @@ async function abrirDetalhe(tipo, id) {
       grid.className = 'modal-grid';
       campos.forEach(({c, l, largo}) => {
         const div = document.createElement('div');
-        div.className = `modal-campo${largo?' largo':''}`;
+        div.className = `modal-campo${largo ? ' largo' : ''}`;
         const valor = c === 'notas' && reg[c]
           ? reg[c].split('//').map(s => s.trim()).join('<br>')
           : reg[c];
@@ -903,28 +948,15 @@ document.addEventListener('keydown', e => {
 // ── Utilitários ───────────────────────────────────────────────────────────────
 
 function limparFiltros() {
-  ['campoPesquisa','filtrAnoMin','filtrAnoMax'].forEach(id => document.getElementById(id).value = '');
-  ['filtrTipo','filtrFonte'].forEach(id => document.getElementById(id).value = '');
+  ['campoPesquisa', 'filtrAnoMin', 'filtrAnoMax'].forEach(id =>
+    document.getElementById(id).value = '');
+  ['filtrTipo', 'filtrFonte'].forEach(id =>
+    document.getElementById(id).value = '');
   document.getElementById('listaResultados').innerHTML = '';
   document.getElementById('infoResultados').style.display = 'none';
   document.getElementById('paginacao').innerHTML = '';
   esconderInterpretacao();
   limparFacetas();
 }
-
-// ── Modo escuro ──────────────────────────────────────────────────────────────
-
-function toggleDark() {
-  const isDark = document.documentElement.classList.toggle('dark');
-  localStorage.setItem('dark', isDark ? '1' : '0');
-  const btn = document.getElementById('btnDarkToggle');
-  if (btn) btn.textContent = isDark ? '☀' : '🌙';
-}
-
-// Sincronizar ícone com o estado actual (o html.dark já foi aplicado pelo script inline)
-document.addEventListener('DOMContentLoaded', () => {
-  const btn = document.getElementById('btnDarkToggle');
-  if (btn) btn.textContent = document.documentElement.classList.contains('dark') ? '☀' : '🌙';
-});
 
 init();
