@@ -1011,3 +1011,45 @@ footer {
   .btn-federado span.material-symbols-outlined { font-size: 18px; }
   .btn-federado-texto { display: none; }
 }
+/* ══════════════════════════════════════════════════════════════════════════════
+   FACETAS EM CASCATA — adicionar no final do style.css
+   ══════════════════════════════════════════════════════════════════════════════ */
+
+/* Badge que mostra quantos valores estão activos num grupo de facetas */
+.faceta-badge-activo {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 16px;
+  height: 16px;
+  padding: 0 4px;
+  background: var(--laranja);
+  color: #fff;
+  font-size: 0.6rem;
+  font-weight: 700;
+  border-radius: 8px;
+  margin-left: auto;
+  margin-right: 0.3rem;
+  line-height: 1;
+}
+
+/* Item de faceta indisponível com os filtros actuais —
+   mantido visível (com checkbox desmarcada) para que o utilizador
+   possa perceber o que foi excluído e desfazer a selecção */
+.faceta-item.indisponivel {
+  opacity: 0.35;
+  pointer-events: none; /* não clicável enquanto indisponível */
+}
+
+/* Item activo (seleccionado) nunca fica indisponível —
+   precisa de ficar clicável para o utilizador o poder desmarcar */
+.faceta-item.activo.indisponivel {
+  opacity: 0.7;
+  pointer-events: auto;
+  color: var(--laranja);
+}
+
+/* Separador visual subtil entre grupos de facetas com selecção activa */
+.faceta-grupo:has(.faceta-badge-activo) {
+  border-left: 2px solid var(--laranja);
+}
