@@ -60,26 +60,128 @@
 
   <!-- Vista de pesquisa -->
   <div id="vistaPesquisa">
+    <!-- ═══════════════════════════════════════════════════════════════════════
+         PAINEL DE PESQUISA — substitui o div.painel-pesquisa em index.html
+         ═══════════════════════════════════════════════════════════════════════ -->
     <div class="painel-pesquisa">
+    
+      <!-- Linha principal: caixa de texto + botões -->
       <div class="campo-principal">
-        <input type="text" id="campoPesquisa" placeholder="Pesquisar por nome, pai, mãe, testemunha…" autocomplete="off">
+        <input type="text" id="campoPesquisa"
+               placeholder="Pesquisar por nome, pai, mãe, testemunha…"
+               autocomplete="off">
         <div class="btns-pesquisa">
           <button class="btn-pesquisar" onclick="pesquisar(1)">Pesquisar</button>
           <button class="btn-pesquisar btn-ia" id="btnIA" onclick="pesquisarIA(1)">
-            <span class="material-symbols-outlined" style="font-size:16px;line-height:1;vertical-align:middle">smart_toy</span>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+              <path d="M12 2l2.4 7.4H22l-6.2 4.5 2.4 7.4L12 17l-6.2 4.3 2.4-7.4L2 9.4h7.6z"/>
+            </svg>
             Pesquisa IA
+          </button>
+          <button class="btn-pesquisar btn-avancado" id="btnAvancado"
+                  onclick="toggleAvancado()"
+                  title="Pesquisar campo a campo">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <line x1="4"  y1="6"  x2="20" y2="6"/>
+              <line x1="8"  y1="12" x2="20" y2="12"/>
+              <line x1="12" y1="18" x2="20" y2="18"/>
+              <circle cx="4"  cy="6"  r="1.5" fill="currentColor"/>
+              <circle cx="8"  cy="12" r="1.5" fill="currentColor"/>
+              <circle cx="12" cy="18" r="1.5" fill="currentColor"/>
+            </svg>
+            <span id="btnAvancadoTexto">+ Avançada</span>
           </button>
           <button class="btn-pesquisar btn-federado" id="btnFederado"
                   onclick="toggleFederado()"
                   title="Pesquisar também noutros arquivos na rede"
                   style="display:none">
-            <span class="material-symbols-outlined" style="font-size:15px;line-height:1">network_node</span>
-            <span class="btn-federado-texto">Rede</span>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="5"  r="2"/>
+              <circle cx="5"  cy="19" r="2"/>
+              <circle cx="19" cy="19" r="2"/>
+              <line x1="12" y1="7"  x2="5"  y2="17"/>
+              <line x1="12" y1="7"  x2="19" y2="17"/>
+              <line x1="5"  y1="17" x2="19" y2="17"/>
+            </svg>
+            Rede
           </button>
           <button class="btn-ajuda" onclick="abrirAjuda()" title="Ajuda">?</button>
         </div>
+        <div class="federado-estado" id="federadoEstado"></div>
       </div>
-      <div class="federado-estado" id="federadoEstado"></div> <!-- pode ser no div abaixo -->
+    
+      <!-- Painel de campos avançados — oculto por defeito -->
+      <div id="painelAvancado" class="painel-avancado" style="display:none">
+    
+        <div class="avancado-secao">
+          <div class="avancado-secao-titulo">Identificação</div>
+          <div class="avancado-grid">
+            <div class="campo-avancado">
+              <label for="avNome">Nome</label>
+              <input type="text" id="avNome" placeholder="ex: José Frade">
+            </div>
+          </div>
+        </div>
+    
+        <div class="avancado-secao">
+          <div class="avancado-secao-titulo">Filiação</div>
+          <div class="avancado-grid">
+            <div class="campo-avancado">
+              <label for="avPai">Pai</label>
+              <input type="text" id="avPai" placeholder="ex: Manuel Costa">
+            </div>
+            <div class="campo-avancado">
+              <label for="avMae">Mãe</label>
+              <input type="text" id="avMae" placeholder="ex: Ana Ferreira">
+            </div>
+            <div class="campo-avancado">
+              <label for="avAvoPat">Avô paterno</label>
+              <input type="text" id="avAvoPat" placeholder="">
+            </div>
+            <div class="campo-avancado">
+              <label for="avAvoPata">Avó paterna</label>
+              <input type="text" id="avAvoPata" placeholder="">
+            </div>
+            <div class="campo-avancado">
+              <label for="avAvoMat">Avô materno</label>
+              <input type="text" id="avAvoMat" placeholder="">
+            </div>
+            <div class="campo-avancado">
+              <label for="avAvoMata">Avó materna</label>
+              <input type="text" id="avAvoMata" placeholder="">
+            </div>
+          </div>
+        </div>
+    
+        <div class="avancado-secao">
+          <div class="avancado-secao-titulo">Casamento</div>
+          <div class="avancado-grid">
+            <div class="campo-avancado">
+              <label for="avNoivo">Noivo</label>
+              <input type="text" id="avNoivo" placeholder="ex: António Silva">
+            </div>
+            <div class="campo-avancado">
+              <label for="avNoiva">Noiva</label>
+              <input type="text" id="avNoiva" placeholder="ex: Maria Santos">
+            </div>
+            <div class="campo-avancado">
+              <label for="avTestemunha">Testemunha</label>
+              <input type="text" id="avTestemunha" placeholder="ex: João Rodrigues">
+            </div>
+          </div>
+        </div>
+    
+        <div class="avancado-rodape">
+          <button class="btn-limpar-av" onclick="_limparCamposAvancados()">
+            Limpar campos
+          </button>
+          <span class="avancado-nota">
+            Os campos preenchidos são combinados na pesquisa — preenche apenas os que conheces.
+          </span>
+        </div>
+      </div>
+    
+      <!-- Filtros globais (tipo, período, fonte) — mantêm-se em ambos os modos -->
       <div class="filtros">
         <div class="filtro-grupo">
           <label>Tipo</label>
@@ -93,7 +195,7 @@
         <div class="filtro-grupo">
           <label>Período</label>
           <div class="filtro-anos">
-            <input type="number" id="filtrAnoMin" placeholder="De" min="1500" max="2100">
+            <input type="number" id="filtrAnoMin" placeholder="De"  min="1500" max="2100">
             <span>–</span>
             <input type="number" id="filtrAnoMax" placeholder="Até" min="1500" max="2100">
           </div>
@@ -106,7 +208,8 @@
         </div>
         <button class="btn-limpar" onclick="limparFiltros()">Limpar</button>
       </div>
-    </div>
+    
+    </div><!-- /painel-pesquisa -->
 
     <div class="ia-interpretacao" id="iaInterpretacao"></div>
 
