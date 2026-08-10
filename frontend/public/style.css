@@ -1011,11 +1011,12 @@ footer {
   .btn-federado span.material-symbols-outlined { font-size: 18px; }
   .btn-federado-texto { display: none; }
 }
-/* ══════════════════════════════════════════════════════════════════════════════
-   PESQUISA AVANÇADA — adicionar no final do style.css
-   ══════════════════════════════════════════════════════════════════════════════ */
 
-/* Botão "+ Avançada" */
+/* ══════════════════════════════════════════════════════════════════════════════
+   COMBINADO: Pesquisa avançada + Facetas em cascata
+   ══════════════════════════════════════════════════════════════════════════════ */
+/* ── Botão "+ Avançada" ────────────────────────────────────────────────────── */
+
 .btn-avancado {
   background: var(--azul-medio);
   color: var(--branco);
@@ -1031,7 +1032,8 @@ footer {
 }
 .btn-avancado svg { width: 13px; height: 13px; flex-shrink: 0; }
 
-/* Painel de campos avançados */
+/* ── Painel de campos avançados ────────────────────────────────────────────── */
+
 .painel-avancado {
   margin-top: 0.75rem;
   padding: 1rem;
@@ -1046,10 +1048,7 @@ footer {
   to   { opacity: 1; transform: translateY(0); }
 }
 
-/* Secções dentro do painel avançado */
-.avancado-secao {
-  margin-bottom: 0.9rem;
-}
+.avancado-secao { margin-bottom: 0.9rem; }
 .avancado-secao:last-of-type { margin-bottom: 0; }
 
 .avancado-secao-titulo {
@@ -1063,7 +1062,6 @@ footer {
   border-bottom: 1px solid var(--linha);
 }
 
-/* Grelha de campos */
 .avancado-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
@@ -1095,15 +1093,12 @@ footer {
   outline: none;
   transition: border-color 0.15s;
 }
-.campo-avancado input:focus {
-  border-color: var(--azul-medio);
-}
+.campo-avancado input:focus { border-color: var(--azul-medio); }
 .campo-avancado input:not(:placeholder-shown) {
   border-color: var(--azul-medio);
   background: #f0f4f8;
 }
 
-/* Rodapé do painel avançado */
 .avancado-rodape {
   display: flex;
   align-items: center;
@@ -1127,10 +1122,7 @@ footer {
   white-space: nowrap;
   flex-shrink: 0;
 }
-.btn-limpar-av:hover {
-  border-color: var(--azul-medio);
-  color: var(--texto);
-}
+.btn-limpar-av:hover { border-color: var(--azul-medio); color: var(--texto); }
 
 .avancado-nota {
   font-size: 0.72rem;
@@ -1139,24 +1131,42 @@ footer {
   font-style: italic;
 }
 
-/* Mobile */
+/* ── Facetas em cascata ────────────────────────────────────────────────────── */
+/* Badge que mostra quantos valores estão activos num grupo */
+.faceta-badge-activo {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 16px;
+  height: 16px;
+  padding: 0 4px;
+  background: var(--laranja);
+  color: #fff;
+  font-size: 0.6rem;
+  font-weight: 700;
+  border-radius: 8px;
+  margin-left: auto;
+  margin-right: 0.3rem;
+  line-height: 1;
+}
+
+/* Tracejado lateral no grupo com selecção activa */
+.faceta-grupo:has(.faceta-badge-activo) {
+  border-left: 2px solid var(--laranja);
+}
+
+/* ── Media queries ─────────────────────────────────────────────────────────── */
 @media (max-width: 640px) {
-  .btn-avancado { display: none; } /* opcional: ocultar em mobile */
+  .btn-avancado { display: none; }
 
-  .avancado-grid {
-    grid-template-columns: 1fr 1fr;
-  }
-
-  .painel-avancado {
-    padding: 0.75rem;
-  }
+  .avancado-grid { grid-template-columns: 1fr 1fr; }
+  .painel-avancado { padding: 0.75rem; }
 
   .avancado-rodape {
     flex-direction: column;
     align-items: flex-start;
     gap: 0.5rem;
   }
-
   .btn-limpar-av { width: 100%; text-align: center; }
 }
 
