@@ -537,7 +537,7 @@ function mostrarResumoAvancado(chips) {
 }
 
 async function pesquisarIA(pagina) {
-  const q = document.getElementById('campoPesquisa').value.trim();
+  const q = modoAvancado ? _recolherTermosAvancados().q : document.getElementById('campoPesquisa').value.trim();
   if (!q) { document.getElementById('campoPesquisa').focus(); return; }
   paginaAtual = 1;
   mostrarCarregando();
@@ -712,17 +712,6 @@ function _calcularValoresGrupo(grupo, resultadosFiltrados) {
   });
   return contagem;
 }
-/* remover depois dos testes
-function calcularFacetas(resultados) {
-  const facetas = { tipo:{}, local:{}, pai:{}, mae:{} };
-  resultados.forEach(r => {
-    facetas.tipo[r.tipo] = (facetas.tipo[r.tipo] || 0) + 1;
-    if (r.local && r.local !== 'n/d') facetas.local[r.local] = (facetas.local[r.local] || 0) + 1;
-    if (r.pai   && r.pai   !== 'n/d') facetas.pai[r.pai]     = (facetas.pai[r.pai]     || 0) + 1;
-    if (r.mae   && r.mae   !== 'n/d') facetas.mae[r.mae]     = (facetas.mae[r.mae]     || 0) + 1;
-  });
-  return facetas;
-}*/
 
 function renderFacetas() {
   const anos = todosResultados.map(r => r.ano).filter(Boolean);
