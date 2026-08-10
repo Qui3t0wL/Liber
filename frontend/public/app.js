@@ -3,6 +3,7 @@ let paginaAtual = 1;
 let dadosEstatisticas = null;
 const POR_PAGINA = 25;
 let modoFederado = false;
+let modoAvancado = false;
 // Estado das facetas
 let todosResultados = [];
 let facetasActivas  = {};
@@ -10,12 +11,16 @@ let anoMinGlobal = 1500, anoMaxGlobal = 2100;
 let anoMinActivo = 1500, anoMaxActivo = 2100;
 
 // ── Init ──────────────────────────────────────────────────────────────────────
-
 async function init() {
   await Promise.all([carregarEstatisticas(), carregarFontes(), carregarFooter()]);
   await verificarAcessoIA();
   document.getElementById('campoPesquisa').addEventListener('keydown', e => {
     if (e.key === 'Enter') pesquisar(1);
+  });
+  document.querySelectorAll('.campo-avancado input').forEach(input => {
+    input.addEventListener('keydown', e => {
+      if (e.key === 'Enter') pesquisar(1);
+    });
   });
   window.addEventListener('resize', () => {
     const painel = document.getElementById('painelFacetas');
@@ -82,7 +87,6 @@ async function carregarFontes() {
 }
 
 // ── Navegação ─────────────────────────────────────────────────────────────────
-
 function mostrarVista(vista) {
   document.getElementById('vistaPesquisa').style.display     = vista === 'pesquisa' ? '' : 'none';
   document.getElementById('vistaEstatisticas').style.display = vista === 'estatisticas' ? '' : 'none';
@@ -96,6 +100,59 @@ function filtrarTipo(tipo) {
   mostrarVista('pesquisa');
   document.getElementById('filtrTipo').value = tipo;
   pesquisar(1);
+}
+
+// ── Modo avançado ─────────────────────────────────────────────────────────────
+ 
+function toggleAvancado() {
+  modoAvancado = !modoAvancado;
+  const painel    = document.getElementById('painelAvancado');
+  const btnTexto  = document.getElementById('btnAvancadoTexto');
+  const btnEl     = document.getElementById('btnAvancado');
+  const campoSimples = document.getElementById('campoPesquisa');
+ 
+  painel.style.display = modoAvancado ? 'block' : 'none';
+  btnTexto.textContent = modoAvancado ? '− Simples' : '+ Avançada';
+  btnEl.classList.toggle('activo', modoAvancado);
+ 
+  if (modoAvancado) {
+    const q = campoSimples.value.trim();
+    if (q) {
+      document.getElementById('avNome').value = q;
+      campoSimples.value = '';
+    }
+    document.getElementById('avNome').focus();
+  } else {
+    const termos = _recolherTermosAvancados();
+    if (termos.q) campoSimples.value = termos.q;
+    _limparCamposAvancados();
+  }
+}
+ 
+function _limparCamposAvancados() {
+  ['avNome','avPai','avMae','avNoivo','avNoiva',
+   'avAvoPat','avAvoPata','avAvoMat','avAvoMata','avTestemunha'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.value = '';
+  });
+}
+ 
+function _recolherTermosAvancados() {
+  const campos = {
+    avNome:       document.getElementById('avNome')?.value.trim()       || '',
+    avPai:        document.getElementById('avPai')?.value.trim()        || '',
+    avMae:        document.getElementById('avMae')?.value.trim()        || '',
+    avNoivo:      document.getElementById('avNoivo')?.value.trim()      || '',
+    avNoiva:      document.getElementById('avNoiva')?.value.trim()      || '',
+    avAvoPat:     document.getElementById('avAvoPat')?.value.trim()     || '',
+    avAvoPata:    document.getElementById('avAvoPata')?.value.trim()    || '',
+    avAvoMat:     document.getElementById('avAvoMat')?.value.trim()     || '',
+    avAvoMata:    document.getElementById('avAvoMata')?.value.trim()    || '',
+    avTestemunha: document.getElementById('avTestemunha')?.value.trim() || '',
+  };
+  const termos = Object.values(campos).filter(Boolean);
+  const q = termos.join(' ');
+  return { q, campos };
 }
 
 // ── Verificar se há nós activos (decide se o botão aparece) ──────────────────
@@ -411,26 +468,46 @@ function renderGrafico(containerId, dados, classeBarrra) {
 async function pesquisar(pagina) {
   paginaAtual = pagina || 1;
   esconderInterpretacao();
-
-  const q      = document.getElementById('campoPesquisa').value.trim();
+ 
   const tipo   = document.getElementById('filtrTipo').value;
   const anoMin = document.getElementById('filtrAnoMin').value;
   const anoMax = document.getElementById('filtrAnoMax').value;
   const fonte  = document.getElementById('filtrFonte').value;
-
+ 
+  let q;
+  let chips = [];
+ 
+  if (modoAvancado) {
+    const { q: qAv, campos } = _recolherTermosAvancados();
+    q = qAv;
+    const labels = {
+      avNome:'Nome', avPai:'Pai', avMae:'Mãe',
+      avNoivo:'Noivo', avNoiva:'Noiva',
+      avAvoPat:'Avô pat.', avAvoPata:'Avó pat.',
+      avAvoMat:'Avô mat.', avAvoMata:'Avó mat.',
+      avTestemunha:'Testemunha',
+    };
+    chips = Object.entries(campos)
+      .filter(([, v]) => v)
+      .map(([k, v]) => ({ label: labels[k] || k, valor: v }));
+  } else {
+    q = document.getElementById('campoPesquisa').value.trim();
+  }
+ 
   const params = new URLSearchParams({ pagina: 1, por_pagina: 5000 });
   if (q)      params.set('q', q);
   if (tipo)   params.set('tipo', tipo);
   if (anoMin) params.set('ano_min', anoMin);
   if (anoMax) params.set('ano_max', anoMax);
   if (fonte)  params.set('fonte', fonte);
-
+ 
   mostrarCarregando();
-
+ 
+  if (modoAvancado && chips.length > 0) mostrarResumoAvancado(chips);
+ 
   try {
     let d;
     if (modoFederado) {
-      // Limitar por_pagina no modo federado (agrega de vários nós)
       params.set('por_pagina', 200);
       d = await _fetchFederado(params);
       mostrarEstadoFederado(d);
@@ -439,7 +516,6 @@ async function pesquisar(pagina) {
       d = await r.json();
       esconderEstadoFederado();
     }
-
     todosResultados = d.resultados;
     facetasActivas  = {};
     anoMinActivo    = 1500;
@@ -449,6 +525,15 @@ async function pesquisar(pagina) {
     document.getElementById('listaResultados').innerHTML =
       `<div class="estado"><div class="estado-icon">⚠</div><p>Erro ao contactar o servidor.</p></div>`;
   }
+}
+ 
+function mostrarResumoAvancado(chips) {
+  const el = document.getElementById('iaInterpretacao');
+  const html = chips.map(c =>
+    `<span class="ia-chip"><span>${c.label}:</span>${c.valor}</span>`
+  ).join('');
+  el.innerHTML = `<span style="color:var(--azul-medio);font-weight:500">🔍 Campos:</span> ${html}`;
+  el.classList.add('visivel');
 }
 
 async function pesquisarIA(pagina) {
@@ -483,7 +568,7 @@ function mostrarInterpretacao(filtros, usouIA) {
   const etiquetas = {
     nome:'Nome', pai:'Pai', mae:'Mãe', noivo:'Noivo', noiva:'Noiva',
     testemunha:'Testemunha', local:'Local', tipo:'Tipo',
-    fonte:'Fonte', ano_min:'De', ano_max:'Até' /* alterei o 'Desde' para 'De' */
+    fonte:'Fonte', ano_min:'De', ano_max:'Até'
   };
   const chips = Object.entries(filtros)
     .map(([k,v]) => `<span class="ia-chip"><span>${etiquetas[k]||k}:</span>${v}</span>`)
@@ -554,7 +639,7 @@ function renderCards(resultados) {
     return;
   }
 
-  const q = document.getElementById('campoPesquisa').value.trim();
+  const q = modoAvancado ? _recolherTermosAvancados().q: document.getElementById('campoPesquisa').value.trim();
   lista.innerHTML = '';
 
   if (modoFederado) {
@@ -597,7 +682,37 @@ function destacar(texto, q) {
 }
 
 // ── Facetas ───────────────────────────────────────────────────────────────────
-
+function _filtrarExcluindoGrupo(grupoExcluido) {
+  return todosResultados.filter(r => {
+    const ano = r.ano || 0;
+    if (ano && (ano < anoMinActivo || ano > anoMaxActivo)) return false;
+    for (const [grupo, valores] of Object.entries(facetasActivas)) {
+      if (grupo === grupoExcluido) continue;
+      if (valores.size === 0) continue;
+      let match = false;
+      if (grupo === 'tipo')  match = valores.has(r.tipo);
+      if (grupo === 'local') match = valores.has(r.local);
+      if (grupo === 'pai')   match = valores.has(r.pai);
+      if (grupo === 'mae')   match = valores.has(r.mae);
+      if (!match) return false;
+    }
+    return true;
+  });
+}
+ 
+function _calcularValoresGrupo(grupo, resultadosFiltrados) {
+  const contagem = {};
+  resultadosFiltrados.forEach(r => {
+    let val = null;
+    if (grupo === 'tipo')  val = r.tipo;
+    if (grupo === 'local') val = r.local;
+    if (grupo === 'pai')   val = r.pai;
+    if (grupo === 'mae')   val = r.mae;
+    if (val && val !== 'n/d') contagem[val] = (contagem[val] || 0) + 1;
+  });
+  return contagem;
+}
+/* remover depois dos testes
 function calcularFacetas(resultados) {
   const facetas = { tipo:{}, local:{}, pai:{}, mae:{} };
   resultados.forEach(r => {
@@ -607,24 +722,23 @@ function calcularFacetas(resultados) {
     if (r.mae   && r.mae   !== 'n/d') facetas.mae[r.mae]     = (facetas.mae[r.mae]     || 0) + 1;
   });
   return facetas;
-}
+}*/
 
-function renderFacetas(resultados) {
-  const facetas = calcularFacetas(resultados);
-  const anos = resultados.map(r => r.ano).filter(Boolean);
+function renderFacetas() {
+  const anos = todosResultados.map(r => r.ano).filter(Boolean);
   anoMinGlobal = anos.length ? Math.min(...anos) : 1500;
   anoMaxGlobal = anos.length ? Math.max(...anos) : 2100;
   if (anoMinActivo === 1500) anoMinActivo = anoMinGlobal;
   if (anoMaxActivo === 2100) anoMaxActivo = anoMaxGlobal;
-
-  const tipoLabels = { batismo:'Batismo', casamento:'Casamento', obito:'Óbito' };
+ 
   const grupos = [
-    { id:'tipo',  titulo:'Tipo de registo', items: Object.entries(facetas.tipo).sort((a,b)=>b[1]-a[1]).map(([k,v])=>({valor:k, label:tipoLabels[k]||k, count:v})) },
-    { id:'local', titulo:'Localidade',      items: Object.entries(facetas.local).sort((a,b)=>b[1]-a[1]).slice(0,20).map(([k,v])=>({valor:k, label:k, count:v})) },
-    { id:'pai',   titulo:'Pai',             items: Object.entries(facetas.pai).sort((a,b)=>b[1]-a[1]).slice(0,20).map(([k,v])=>({valor:k, label:k, count:v})) },
-    { id:'mae',   titulo:'Mãe',             items: Object.entries(facetas.mae).sort((a,b)=>b[1]-a[1]).slice(0,20).map(([k,v])=>({valor:k, label:k, count:v})) },
-  ]; /*alterei todas as slices para terem 20 resultados. Antes tinham 15,10,10 */
-
+    { id:'tipo',  titulo:'Tipo de registo',
+      labels:{ batismo:'Batismo', casamento:'Casamento', obito:'Óbito' } },
+    { id:'local', titulo:'Localidade', labels:{} },
+    { id:'pai',   titulo:'Pai',        labels:{} },
+    { id:'mae',   titulo:'Mãe',        labels:{} },
+  ];
+ 
   const html = `
     <div class="faceta-grupo">
       <div class="faceta-titulo" onclick="toggleFaceta('anos')">
@@ -636,37 +750,54 @@ function renderFacetas(resultados) {
             <span id="sliderMinVal">${anoMinActivo}</span>
             <span id="sliderMaxVal">${anoMaxActivo}</span>
           </div>
-          <input type="range" id="sliderMin" min="${anoMinGlobal}" max="${anoMaxGlobal}" value="${anoMinActivo}" oninput="actualizarSlider('min',this.value)">
-          <input type="range" id="sliderMax" min="${anoMinGlobal}" max="${anoMaxGlobal}" value="${anoMaxActivo}" oninput="actualizarSlider('max',this.value)">
+          <input type="range" id="sliderMin" min="${anoMinGlobal}" max="${anoMaxGlobal}"
+                 value="${anoMinActivo}" oninput="actualizarSlider('min',this.value)">
+          <input type="range" id="sliderMax" min="${anoMinGlobal}" max="${anoMaxGlobal}"
+                 value="${anoMaxActivo}" oninput="actualizarSlider('max',this.value)">
         </div>
       </div>
     </div>
-    ${grupos.map(g => g.items.length === 0 ? '' : `
-      <div class="faceta-grupo">
-        <div class="faceta-titulo" onclick="toggleFaceta('${g.id}')">
-          ${g.titulo} <span class="faceta-titulo-seta fechado" id="seta-${g.id}">▾</span>
-        </div>
-        <div class="faceta-lista fechada" id="lista-${g.id}">
-          ${g.items.map(item => {
-            const activo = (facetasActivas[g.id] || new Set()).has(item.valor);
-            return `<label class="faceta-item ${activo?'activo':''}">
-              <input type="checkbox" ${activo?'checked':''} onchange="toggleFiltro('${g.id}','${item.valor.replace(/'/g,"\\'")}')">
-              <span class="faceta-item-label" title="${item.label}">${item.label}</span>
-              <span class="faceta-item-count">${item.count}</span>
-            </label>`;
-          }).join('')}
-        </div>
-      </div>`).join('')}`;
-
+    ${grupos.map(g => {
+      const disponiveis = _calcularValoresGrupo(g.id, _filtrarExcluindoGrupo(g.id));
+      const activos = facetasActivas[g.id] || new Set();
+      const items = Object.entries(disponiveis)
+        .sort((a, b) => b[1] - a[1])
+        .slice(0, 20)
+        .map(([k, v]) => ({ valor: k, label: g.labels[k] || k, count: v }));
+      if (items.length === 0) return '';
+      return `
+        <div class="faceta-grupo">
+          <div class="faceta-titulo" onclick="toggleFaceta('${g.id}')">
+            ${g.titulo}
+            ${activos.size > 0
+              ? `<span class="faceta-badge-activo">${activos.size}</span>`
+              : ''}
+            <span class="faceta-titulo-seta fechado" id="seta-${g.id}">▾</span>
+          </div>
+          <div class="faceta-lista fechada" id="lista-${g.id}">
+            ${items.map(item => {
+              const activo = activos.has(item.valor);
+              return `<label class="faceta-item ${activo ? 'activo' : ''}">
+                <input type="checkbox" ${activo ? 'checked' : ''}
+                       onchange="toggleFiltro('${g.id}','${item.valor.replace(/'/g,"\\'")}')">
+                <span class="faceta-item-label" title="${item.label}">${item.label}</span>
+                <span class="faceta-item-count">${item.count}</span>
+              </label>`;
+            }).join('')}
+          </div>
+        </div>`;
+    }).join('')}`;
+ 
   document.getElementById('facetasConteudo').innerHTML = html;
   document.getElementById('facetasDrawer').innerHTML   = html;
 }
 
 function toggleFaceta(id) {
-  ['', 'Drawer'].forEach(suffix => {
-    const cont = suffix ? document.getElementById('facetasDrawer') : null;
-    const lista = cont ? cont.querySelector(`#lista-${id}`) : document.getElementById(`lista-${id}`);
-    const seta  = cont ? cont.querySelector(`#seta-${id}`)  : document.getElementById(`seta-${id}`);
+  ['facetasConteudo', 'facetasDrawer'].forEach(contId => {
+    const cont = document.getElementById(contId);
+    if (!cont) return;
+    const lista = cont.querySelector(`#lista-${id}`);
+    const seta  = cont.querySelector(`#seta-${id}`);
     if (lista) lista.classList.toggle('fechada');
     if (seta)  seta.classList.toggle('fechado');
   });
@@ -685,16 +816,12 @@ function actualizarSlider(tipo, val) {
   val = parseInt(val);
   if (tipo === 'min') anoMinActivo = Math.min(val, anoMaxActivo);
   else                anoMaxActivo = Math.max(val, anoMinActivo);
-  document.getElementById('sliderMinVal').textContent = anoMinActivo;
-  document.getElementById('sliderMaxVal').textContent = anoMaxActivo;
-  document.getElementById('sliderMin').value = anoMinActivo;
-  document.getElementById('sliderMax').value = anoMaxActivo;
   paginaAtual = 1;
   aplicarFacetas();
 }
 
 function aplicarFacetas() {
-  let filtrados = todosResultados.filter(r => {
+  const filtrados = todosResultados.filter(r => {
     const ano = r.ano || 0;
     if (ano && (ano < anoMinActivo || ano > anoMaxActivo)) return false;
     for (const [grupo, valores] of Object.entries(facetasActivas)) {
@@ -728,7 +855,7 @@ function aplicarFacetas() {
 
   renderCards(filtrados.slice((paginaAtual-1)*POR_PAGINA, paginaAtual*POR_PAGINA));
   renderPaginacaoCliente(total);
-  renderFacetas(todosResultados);
+  renderFacetas();
 }
 
 function limparFacetas() {
@@ -905,6 +1032,7 @@ document.addEventListener('keydown', e => {
 function limparFiltros() {
   ['campoPesquisa','filtrAnoMin','filtrAnoMax'].forEach(id => document.getElementById(id).value = '');
   ['filtrTipo','filtrFonte'].forEach(id => document.getElementById(id).value = '');
+  _limparCamposAvancados();
   document.getElementById('listaResultados').innerHTML = '';
   document.getElementById('infoResultados').style.display = 'none';
   document.getElementById('paginacao').innerHTML = '';
