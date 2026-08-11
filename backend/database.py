@@ -247,7 +247,7 @@ class Database:
         inicio = (pagina - 1) * por_pagina
         return todos[inicio:inicio + por_pagina], total
 
-	def pesquisar_avancado(
+    def pesquisar_avancado(
         self,
         tipo: str,
         nome: str = None, pai: str = None, mae: str = None,
