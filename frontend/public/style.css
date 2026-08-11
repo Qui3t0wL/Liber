@@ -70,6 +70,10 @@ html.dark .campo-avancado input { background: var(--cinza-claro); color: var(--t
 html.dark .campo-avancado input::placeholder          { color: var(--texto-sub); }
 html.dark .campo-avancado input:focus                 { border-color: #6a9ab8; background: var(--branco); }
 html.dark .campo-avancado input:not(:placeholder-shown) { border-color: #6a9ab8; background: var(--branco); }
+/* Barra de interpretação (IA e resumo avançado) — fundo e texto em modo escuro */
+html.dark .ia-interpretacao { background: rgba(106,154,184,0.06); border-color: #364a62; color: var(--texto-sub); }
+/* Texto "🔍 Todos os tipos:" / "🔍 Casamentos:" que aparece à esquerda */
+html.dark .ia-interpretacao span[style] { color: #7ab0d8 !important; }
 
 /* ══════════════════════════════════════
    RESET E BASE
