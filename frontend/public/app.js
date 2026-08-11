@@ -4,6 +4,7 @@ let dadosEstatisticas = null;
 const POR_PAGINA = 25;
 let modoFederado = false;
 let modoAvancado = false;
+
 // Estado das facetas
 let todosResultados = [];
 let facetasActivas  = {};
@@ -11,6 +12,7 @@ let anoMinGlobal = 1500, anoMaxGlobal = 2100;
 let anoMinActivo = 1500, anoMaxActivo = 2100;
 
 // ── Init ──────────────────────────────────────────────────────────────────────
+
 async function init() {
   await Promise.all([carregarEstatisticas(), carregarFontes(), carregarFooter()]);
   await verificarAcessoIA();
@@ -87,6 +89,7 @@ async function carregarFontes() {
 }
 
 // ── Navegação ─────────────────────────────────────────────────────────────────
+
 function mostrarVista(vista) {
   document.getElementById('vistaPesquisa').style.display     = vista === 'pesquisa' ? '' : 'none';
   document.getElementById('vistaEstatisticas').style.display = vista === 'estatisticas' ? '' : 'none';
@@ -115,47 +118,91 @@ function toggleAvancado() {
   btnTexto.textContent = modoAvancado ? '− Simples' : '+ Avançada';
   btnEl.classList.toggle('activo', modoAvancado);
  
+  // Campo geral: desactivar quando modo avançado está activo
+  campoSimples.disabled    = modoAvancado;
+  campoSimples.placeholder = modoAvancado
+    ? 'Usa os campos abaixo para pesquisar'
+    : 'Pesquisar por nome, pai, mãe, testemunha…';
+  campoSimples.style.opacity = modoAvancado ? '0.45' : '1';
+  campoSimples.style.cursor  = modoAvancado ? 'not-allowed' : '';
+
   if (modoAvancado) {
-    const q = campoSimples.value.trim();
-    if (q) {
-      document.getElementById('avNome').value = q;
-      campoSimples.value = '';
-    }
     document.getElementById('avNome').focus();
   } else {
-    const termos = _recolherTermosAvancados();
-    if (termos.q) campoSimples.value = termos.q;
     _limparCamposAvancados();
+    campoSimples.focus();
   }
 }
  
 function _limparCamposAvancados() {
-  ['avNome','avPai','avMae','avNoivo','avNoiva',
-   'avAvoPat','avAvoPata','avAvoMat','avAvoMata','avTestemunha'].forEach(id => {
+  ['avNome','avPai','avMae',
+   'avAvoPat','avAvoPata','avAvoMat','avAvoMata',
+   'avNoivo','avNoiva','avPaiNoivo','avMaeNoivo','avPaiNoiva','avMaeNoiva',
+   'avTestemunha'].forEach(id => {
     const el = document.getElementById(id);
     if (el) el.value = '';
   });
-}
- 
-function _recolherTermosAvancados() {
-  const campos = {
-    avNome:       document.getElementById('avNome')?.value.trim()       || '',
-    avPai:        document.getElementById('avPai')?.value.trim()        || '',
-    avMae:        document.getElementById('avMae')?.value.trim()        || '',
-    avNoivo:      document.getElementById('avNoivo')?.value.trim()      || '',
-    avNoiva:      document.getElementById('avNoiva')?.value.trim()      || '',
-    avAvoPat:     document.getElementById('avAvoPat')?.value.trim()     || '',
-    avAvoPata:    document.getElementById('avAvoPata')?.value.trim()    || '',
-    avAvoMat:     document.getElementById('avAvoMat')?.value.trim()     || '',
-    avAvoMata:    document.getElementById('avAvoMata')?.value.trim()    || '',
-    avTestemunha: document.getElementById('avTestemunha')?.value.trim() || '',
-  };
-  const termos = Object.values(campos).filter(Boolean);
-  const q = termos.join(' ');
-  return { q, campos };
+  _actualizarIndicadorTipo();
 }
 
-// ── Verificar se há nós activos (decide se o botão aparece) ──────────────────
+/**
+ * Recolhe os campos avançados e devolve os parâmetros para o endpoint
+ * /api/pesquisar-avancado, mais metadados para o resumo visual.
+ */
+function _recolherCamposAvancados() {
+  const v = id => document.getElementById(id)?.value.trim() || '';
+  const campos = {
+    nome:       v('avNome'),
+    pai:        v('avPai'),
+    mae:        v('avMae'),
+    avo_paterno: v('avAvoPat'),
+    avo_paterna: v('avAvoPata'),
+    avo_materno: v('avAvoMat'),
+    avo_materna: v('avAvoMata'),
+    noivo:      v('avNoivo'),
+    noiva:      v('avNoiva'),
+    pai_noivo:  v('avPaiNoivo'),
+    mae_noivo:  v('avMaeNoivo'),
+    pai_noiva:  v('avPaiNoiva'),
+    mae_noiva:  v('avMaeNoiva'),
+    testemunha: v('avTestemunha'),
+  };
+  return campos;
+}
+
+/**
+ * Infere o tipo de pesquisa com base nos campos preenchidos.
+ * Devolve { tipos, label } para mostrar ao utilizador.
+ */
+function _inferirTipo(campos) {
+  const casamento = !!(campos.noivo || campos.noiva ||
+    campos.pai_noivo || campos.mae_noivo ||
+    campos.pai_noiva || campos.mae_noiva || campos.testemunha);
+  const pessoa = !!(campos.nome || campos.avo_paterno || campos.avo_paterna ||
+    campos.avo_materno || campos.avo_materna);
+
+  if (casamento && !pessoa) return { tipos: ['casamento'], label: 'Casamentos' };
+  if (pessoa && !casamento) return { tipos: ['batismo', 'obito'], label: 'Batismos e Óbitos' };
+  return { tipos: ['batismo', 'casamento', 'obito'], label: 'Todos os tipos' };
+}
+
+/** Actualiza o chip de tipo inferido no painel avançado */
+function _actualizarIndicadorTipo() {
+  const el = document.getElementById('indicadorTipo');
+  if (!el) return;
+  const campos = _recolherCamposAvancados();
+  const temAlgo = Object.values(campos).some(Boolean);
+  if (!temAlgo) {
+    el.textContent = '';
+    el.style.display = 'none';
+    return;
+  }
+  const { label } = _inferirTipo(campos);
+  el.textContent = `🔍 ${label}`;
+  el.style.display = 'inline-flex';
+}
+
+// ── Federacao - Verificar se há nós activos (decide se o botão aparece) ───────
 async function verificarNosFederados() {
   try {
     const r = await fetch('/api/pesquisar-federado?por_pagina=1');
@@ -474,70 +521,91 @@ async function pesquisar(pagina) {
   const anoMax = document.getElementById('filtrAnoMax').value;
   const fonte  = document.getElementById('filtrFonte').value;
  
-  let q;
-  let chips = [];
- 
-  if (modoAvancado) {
-    const { q: qAv, campos } = _recolherTermosAvancados();
-    q = qAv;
-    const labels = {
-      avNome:'Nome', avPai:'Pai', avMae:'Mãe',
-      avNoivo:'Noivo', avNoiva:'Noiva',
-      avAvoPat:'Avô pat.', avAvoPata:'Avó pat.',
-      avAvoMat:'Avô mat.', avAvoMata:'Avó mat.',
-      avTestemunha:'Testemunha',
-    };
-    chips = Object.entries(campos)
-      .filter(([, v]) => v)
-      .map(([k, v]) => ({ label: labels[k] || k, valor: v }));
-  } else {
-    q = document.getElementById('campoPesquisa').value.trim();
-  }
- 
-  const params = new URLSearchParams({ pagina: 1, por_pagina: 5000 });
-  if (q)      params.set('q', q);
-  if (tipo)   params.set('tipo', tipo);
-  if (anoMin) params.set('ano_min', anoMin);
-  if (anoMax) params.set('ano_max', anoMax);
-  if (fonte)  params.set('fonte', fonte);
- 
   mostrarCarregando();
- 
-  if (modoAvancado && chips.length > 0) mostrarResumoAvancado(chips);
  
   try {
     let d;
-    if (modoFederado) {
-      params.set('por_pagina', 200);
-      d = await _fetchFederado(params);
-      mostrarEstadoFederado(d);
-    } else {
-      const r = await fetch(`${API}/api/pesquisar?${params}`);
+
+    if (modoAvancado) {
+      // ── Pesquisa avançada: endpoint dedicado com campos separados ──
+      const campos = _recolherCamposAvancados();
+      const temAlgo = Object.values(campos).some(Boolean);
+      if (!temAlgo) {
+        document.getElementById('listaResultados').innerHTML =
+          `<div class="estado"><div class="estado-icon">🔍</div><p>Preenche pelo menos um campo para pesquisar.</p></div>`;
+        return;
+      }
+
+      const { label } = _inferirTipo(campos);
+      const params = new URLSearchParams({ pagina: 1, por_pagina: 5000 });
+      Object.entries(campos).forEach(([k, v]) => { if (v) params.set(k, v); });
+      if (anoMin) params.set('ano_min', anoMin);
+      if (anoMax) params.set('ano_max', anoMax);
+      if (fonte)  params.set('fonte', fonte);
+      // Tipo manual sobrepõe a inferência automática
+      if (tipo)   params.set('tipo_forcado', tipo);
+
+      const r = await fetch(`${API}/api/pesquisar-avancado?${params}`);
       d = await r.json();
+
+      // Mostrar chips dos campos activos + tipo inferido
+      const labelsTrad = {
+        nome:'Nome', pai:'Pai', mae:'Mãe',
+        avo_paterno:'Avô pat.', avo_paterna:'Avó pat.',
+        avo_materno:'Avô mat.', avo_materna:'Avó mat.',
+        noivo:'Noivo', noiva:'Noiva',
+        pai_noivo:'Pai noivo', mae_noivo:'Mãe noivo',
+        pai_noiva:'Pai noiva', mae_noiva:'Mãe noiva',
+        testemunha:'Testemunha',
+      };
+      const chips = Object.entries(campos)
+        .filter(([, v]) => v)
+        .map(([k, v]) => `<span class="ia-chip"><span>${labelsTrad[k] || k}:</span>${v}</span>`)
+        .join('');
+      const elIA = document.getElementById('iaInterpretacao');
+      elIA.innerHTML = `
+        <span style="color:var(--azul-medio);font-weight:500">🔍 ${label}:</span>
+        ${chips}`;
+      elIA.classList.add('visivel');
+
       esconderEstadoFederado();
+
+    } else {
+      // ── Pesquisa simples: endpoint original ──
+      const q = document.getElementById('campoPesquisa').value.trim();
+      const params = new URLSearchParams({ pagina: 1, por_pagina: 5000 });
+      if (q)      params.set('q', q);
+      if (tipo)   params.set('tipo', tipo);
+      if (anoMin) params.set('ano_min', anoMin);
+      if (anoMax) params.set('ano_max', anoMax);
+      if (fonte)  params.set('fonte', fonte);
+
+      if (modoFederado) {
+        params.set('por_pagina', 200);
+        d = await _fetchFederado(params);
+        mostrarEstadoFederado(d);
+      } else {
+        const r = await fetch(`${API}/api/pesquisar?${params}`);
+        d = await r.json();
+        esconderEstadoFederado();
+      }
     }
+
     todosResultados = d.resultados;
     facetasActivas  = {};
     anoMinActivo    = 1500;
     anoMaxActivo    = 2100;
-    renderResultados(d, q);
+    renderResultados(d, '');
+
   } catch(e) {
     document.getElementById('listaResultados').innerHTML =
       `<div class="estado"><div class="estado-icon">⚠</div><p>Erro ao contactar o servidor.</p></div>`;
   }
 }
- 
-function mostrarResumoAvancado(chips) {
-  const el = document.getElementById('iaInterpretacao');
-  const html = chips.map(c =>
-    `<span class="ia-chip"><span>${c.label}:</span>${c.valor}</span>`
-  ).join('');
-  el.innerHTML = `<span style="color:var(--azul-medio);font-weight:500">🔍 Campos:</span> ${html}`;
-  el.classList.add('visivel');
-}
 
 async function pesquisarIA(pagina) {
-  const q = modoAvancado ? _recolherTermosAvancados().q : document.getElementById('campoPesquisa').value.trim();
+  if (modoAvancado) return; // IA só funciona em modo simples
+  const q = document.getElementById('campoPesquisa').value.trim();
   if (!q) { document.getElementById('campoPesquisa').focus(); return; }
   paginaAtual = 1;
   mostrarCarregando();
@@ -606,7 +674,7 @@ function renderResultados(d, q) {
   if (d.total === 0) {
     document.getElementById('listaResultados').innerHTML =
       `<div class="estado"><div class="estado-icon">🔍</div>
-       <p>Nenhum registo encontrado${q ? ` para "<strong>${q}</strong>"` : ''}.</p></div>`;
+       <p>Nenhum registo encontrado.</p></div>`;
     info.style.display = 'none';
     painel.style.display = 'none';
     layout.classList.add('sem-facetas');
@@ -624,7 +692,7 @@ function renderResultados(d, q) {
       layout.classList.add('sem-facetas');
     }
     btnMobile.style.display = 'flex';
-    renderFacetas(todosResultados);
+    renderFacetas();
   }
 
   info.style.display = 'flex';
@@ -639,7 +707,7 @@ function renderCards(resultados) {
     return;
   }
 
-  const q = modoAvancado ? _recolherTermosAvancados().q: document.getElementById('campoPesquisa').value.trim();
+  const q = modoAvancado ? '' : document.getElementById('campoPesquisa').value.trim();
   lista.innerHTML = '';
 
   if (modoFederado) {
@@ -681,7 +749,8 @@ function destacar(texto, q) {
     '<mark style="background:#fde8a0;padding:0 1px;border-radius:2px">$1</mark>');
 }
 
-// ── Facetas ───────────────────────────────────────────────────────────────────
+// ── Facetas em cascata ────────────────────────────────────────────────────────
+
 function _filtrarExcluindoGrupo(grupoExcluido) {
   return todosResultados.filter(r => {
     const ano = r.ano || 0;
@@ -713,6 +782,31 @@ function _calcularValoresGrupo(grupo, resultadosFiltrados) {
   return contagem;
 }
 
+/**
+ * Determina os grupos de facetas a mostrar com base nos tipos de resultados.
+ * Se só há casamentos, mostra facetas relevantes para casamentos.
+ */
+function _determinarGruposFacetas() {
+  const tipos = new Set(todosResultados.map(r => r.tipo));
+  const soCasamentos = tipos.size === 1 && tipos.has('casamento');
+
+  const base = [
+    { id:'tipo',  titulo:'Tipo de registo',
+      labels:{ batismo:'Batismo', casamento:'Casamento', obito:'Óbito' } },
+    { id:'local', titulo:'Localidade', labels:{} },
+  ];
+
+  if (soCasamentos) {
+    // Para casamentos, pai/mae já vêm mapeados como pai_noivo/mae_noivo no select
+    base.push({ id:'pai', titulo:'Pai do noivo', labels:{} });
+    base.push({ id:'mae', titulo:'Mãe do noivo', labels:{} });
+  } else {
+    base.push({ id:'pai', titulo:'Pai', labels:{} });
+    base.push({ id:'mae', titulo:'Mãe', labels:{} });
+  }
+
+  return base;
+}
 function renderFacetas() {
   const anos = todosResultados.map(r => r.ano).filter(Boolean);
   anoMinGlobal = anos.length ? Math.min(...anos) : 1500;
@@ -720,13 +814,7 @@ function renderFacetas() {
   if (anoMinActivo === 1500) anoMinActivo = anoMinGlobal;
   if (anoMaxActivo === 2100) anoMaxActivo = anoMaxGlobal;
  
-  const grupos = [
-    { id:'tipo',  titulo:'Tipo de registo',
-      labels:{ batismo:'Batismo', casamento:'Casamento', obito:'Óbito' } },
-    { id:'local', titulo:'Localidade', labels:{} },
-    { id:'pai',   titulo:'Pai',        labels:{} },
-    { id:'mae',   titulo:'Mãe',        labels:{} },
-  ];
+  const grupos = _determinarGruposFacetas();
  
   const html = `
     <div class="faceta-grupo">
@@ -825,7 +913,7 @@ function aplicarFacetas() {
     return true;
   });
 
-  const nFiltros = Object.values(facetasActivas).reduce((s,v) => s + v.size, 0)
+  const nFiltros = Object.values(facetasActivas).reduce((s, v) => s + v.size, 0)
     + (anoMinActivo > anoMinGlobal || anoMaxActivo < anoMaxGlobal ? 1 : 0);
   const badge = document.getElementById('badgeFiltros');
   badge.textContent    = nFiltros;
@@ -842,7 +930,7 @@ function aplicarFacetas() {
     : `${inicio} – ${fim} de ${total.toLocaleString('pt-PT')} filtrados (${totalOr.toLocaleString('pt-PT')} no total)`;
   document.getElementById('textoFiltrados').style.display = 'none';
 
-  renderCards(filtrados.slice((paginaAtual-1)*POR_PAGINA, paginaAtual*POR_PAGINA));
+  renderCards(filtrados.slice((paginaAtual - 1) * POR_PAGINA, paginaAtual * POR_PAGINA));
   renderPaginacaoCliente(total);
   renderFacetas();
 }
@@ -862,13 +950,13 @@ function renderPaginacaoCliente(total) {
   const atual   = paginaAtual;
   const paginas = [1];
   if (atual > 3) paginas.push('...');
-  for (let p = Math.max(2, atual-1); p <= Math.min(nPaginas-1, atual+1); p++) paginas.push(p);
-  if (atual < nPaginas-2) paginas.push('...');
+  for (let p = Math.max(2, atual - 1); p <= Math.min(nPaginas - 1, atual + 1); p++) paginas.push(p);
+  if (atual < nPaginas - 2) paginas.push('...');
   if (nPaginas > 1) paginas.push(nPaginas);
   cont.innerHTML = paginas.map(p =>
     p === '...'
       ? `<span style="padding:0.35rem 0.3rem;color:var(--cinza)">…</span>`
-      : `<button class="btn-pag ${p===atual?'ativo':''}" onclick="mudarPagina(${p})">${p}</button>`
+      : `<button class="btn-pag ${p === atual ? 'ativo' : ''}" onclick="mudarPagina(${p})">${p}</button>`
   ).join('');
 }
 
