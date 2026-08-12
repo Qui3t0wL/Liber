@@ -289,7 +289,9 @@ class Database:
                 SELECT id, 'casamento' as tipo, fonte, ano,
                        (noivo || ' & ' || noiva) as nome,
                        data, residencia as local,
-                       pai_noivo as pai, mae_noivo as mae, notas,
+                       pai_noivo, mae_noivo,
+                       pai_noiva, mae_noiva,
+                       notas,
                        noivo as _nome_sort
                 FROM casamentos
             """
@@ -382,7 +384,10 @@ class Database:
             select = """
                 SELECT id, 'casamento' as tipo, fonte, ano,
                        (noivo || ' & ' || noiva) as nome,
-                       data, residencia as local, pai_noivo as pai, mae_noivo as mae, notas,
+                       data, residencia as local,
+                       pai_noivo, mae_noivo,
+                       pai_noiva, mae_noiva,
+                       notas,
                        noivo as _nome_sort
                 FROM casamentos
             """
