@@ -228,7 +228,7 @@ O botão é ocultado automaticamente se o endpoint não estiver acessível (fora
 Combinam com qualquer modo de pesquisa (simples, avançada ou IA):
 - **Tipo:** Automático (inferido) / Batismos / Casamentos / Óbitos
 - **Período:** ano mínimo e máximo
-- **Fonte:** referência do arquivo (ex: `PT/ADSTR/PRQ/PABT06`)
+- **Fonte:** referência do arquivo (ex: `PT-ADSTR-PRQ-PABT06`)
 
 ### Facetas dinâmicas em cascata
 Após uma pesquisa com mais de um resultado, surge um painel lateral (desktop) ou _drawer_ (mobile) com filtros adicionais sobre os resultados já obtidos:
