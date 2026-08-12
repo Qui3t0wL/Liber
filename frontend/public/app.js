@@ -277,7 +277,9 @@ function _criarCard(reg, q) {
   const detalhes  = [];
   if (reg.data) detalhes.push(reg.data);
   if (reg.local && reg.local !== 'n/d') detalhes.push(reg.local);
-  const pais = [reg.pai, reg.mae].filter(p => p && p !== 'n/d').join(' & ');
+  const pais = reg.tipo === 'casamento'
+      ? [reg.pai_noivo, reg.mae_noivo].filter(p => p && p !== 'n/d').join(' & ')
+      : [reg.pai, reg.mae].filter(p => p && p !== 'n/d').join(' & ');
   if (pais) detalhes.push(`Fil. ${pais}`);
 
   const origemHtml = (modoFederado && reg._no && !reg._no.local)
@@ -302,6 +304,7 @@ function _criarCard(reg, q) {
   });
   return card;
 }
+
 // ── Detalhe de registo remoto ─────────────────────────────────────────────────
 async function _abrirDetalheRemoto(reg) {
   try {
@@ -755,14 +758,18 @@ function _filtrarExcluindoGrupo(grupoExcluido) {
   return todosResultados.filter(r => {
     const ano = r.ano || 0;
     if (ano && (ano < anoMinActivo || ano > anoMaxActivo)) return false;
+    
     for (const [grupo, valores] of Object.entries(facetasActivas)) {
       if (grupo === grupoExcluido) continue;
       if (valores.size === 0) continue;
       let match = false;
       if (grupo === 'tipo')  match = valores.has(r.tipo);
       if (grupo === 'local') match = valores.has(r.local);
-      if (grupo === 'pai')   match = valores.has(r.pai);
-      if (grupo === 'mae')   match = valores.has(r.mae);
+      if (grupo === 'pais_maes') {
+        // Corresponde se qualquer um dos 4 campos de filiação (ou pai/mae genérico) bater
+        match = [r.pai_noivo, r.mae_noivo, r.pai_noiva, r.mae_noiva, r.pai, r.mae]
+          .some(v => v && valores.has(v));
+      }
       if (!match) return false;
     }
     return true;
@@ -772,12 +779,23 @@ function _filtrarExcluindoGrupo(grupoExcluido) {
 function _calcularValoresGrupo(grupo, resultadosFiltrados) {
   const contagem = {};
   resultadosFiltrados.forEach(r => {
-    let val = null;
-    if (grupo === 'tipo')  val = r.tipo;
-    if (grupo === 'local') val = r.local;
-    if (grupo === 'pai')   val = r.pai;
-    if (grupo === 'mae')   val = r.mae;
-    if (val && val !== 'n/d') contagem[val] = (contagem[val] || 0) + 1;
+    let vals = [];
+
+    if (grupo === 'tipo') {
+      vals = [r.tipo];
+    } else if (grupo === 'local') {
+      vals = [r.local];
+    } else if (grupo === 'pais_maes') {
+      // Agregar os 4 campos de filiação dos casamentos, mais pai/mae dos batismos e óbitos
+      vals = [
+        r.pai_noivo, r.mae_noivo,
+        r.pai_noiva, r.mae_noiva,
+        r.pai, r.mae,             // batismos e óbitos
+      ];
+    }
+    vals.forEach(v => {
+      if (v && v !== 'n/d') contagem[v] = (contagem[v] || 0) + 1;
+    });
   });
   return contagem;
 }
@@ -788,25 +806,27 @@ function _calcularValoresGrupo(grupo, resultadosFiltrados) {
  */
 function _determinarGruposFacetas() {
   const tipos = new Set(todosResultados.map(r => r.tipo));
-  const soCasamentos = tipos.size === 1 && tipos.has('casamento');
+  const temCasamento  = tipos.has('casamento');
+  const temOutros     = tipos.has('batismo') || tipos.has('obito');
 
-  const base = [
-    { id:'tipo',  titulo:'Tipo de registo',
-      labels:{ batismo:'Batismo', casamento:'Casamento', obito:'Óbito' } },
-    { id:'local', titulo:'Localidade', labels:{} },
+  const grupos = [
+    { id: 'tipo',  titulo: 'Tipo de registo',
+      labels: { batismo:'Batismo', casamento:'Casamento', obito:'Óbito' } },
+    { id: 'local', titulo: 'Localidade', labels: {} },
   ];
-
-  if (soCasamentos) {
-    // Para casamentos, pai/mae já vêm mapeados como pai_noivo/mae_noivo no select
-    base.push({ id:'pai', titulo:'Pai do noivo', labels:{} });
-    base.push({ id:'mae', titulo:'Mãe do noivo', labels:{} });
+  // Faceta unificada de filiação:
+  // - só casamentos → "Pais & Mães"
+  // - só batismos/óbitos → "Pai" e "Mãe" separados (comportamento original)
+  // - mistura → "Pais & Mães" unificado (abrange tudo)
+  if (temCasamento) {
+    grupos.push({ id: 'pais_maes', titulo: 'Pais & Mães', labels: {} });
   } else {
-    base.push({ id:'pai', titulo:'Pai', labels:{} });
-    base.push({ id:'mae', titulo:'Mãe', labels:{} });
+    grupos.push({ id: 'pai', titulo: 'Pai', labels: {} });
+    grupos.push({ id: 'mae', titulo: 'Mãe', labels: {} });
   }
-
-  return base;
+  return grupos;
 }
+
 function renderFacetas() {
   const anos = todosResultados.map(r => r.ano).filter(Boolean);
   anoMinGlobal = anos.length ? Math.min(...anos) : 1500;
@@ -901,13 +921,17 @@ function aplicarFacetas() {
   const filtrados = todosResultados.filter(r => {
     const ano = r.ano || 0;
     if (ano && (ano < anoMinActivo || ano > anoMaxActivo)) return false;
+
     for (const [grupo, valores] of Object.entries(facetasActivas)) {
       if (valores.size === 0) continue;
+
       let match = false;
       if (grupo === 'tipo')  match = valores.has(r.tipo);
       if (grupo === 'local') match = valores.has(r.local);
-      if (grupo === 'pai')   match = valores.has(r.pai);
-      if (grupo === 'mae')   match = valores.has(r.mae);
+      if (grupo === 'pais_maes') {
+        match = [r.pai_noivo, r.mae_noivo, r.pai_noiva, r.mae_noiva, r.pai, r.mae]
+          .some(v => v && valores.has(v));
+      }
       if (!match) return false;
     }
     return true;
@@ -916,8 +940,8 @@ function aplicarFacetas() {
   const nFiltros = Object.values(facetasActivas).reduce((s, v) => s + v.size, 0)
     + (anoMinActivo > anoMinGlobal || anoMaxActivo < anoMaxGlobal ? 1 : 0);
   const badge = document.getElementById('badgeFiltros');
-  badge.textContent    = nFiltros;
-  badge.style.display  = nFiltros > 0 ? 'inline' : 'none';
+  badge.textContent   = nFiltros;
+  badge.style.display = nFiltros > 0 ? 'inline' : 'none';
 
   const total   = filtrados.length;
   const totalOr = todosResultados.length;
