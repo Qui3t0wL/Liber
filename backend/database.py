@@ -247,6 +247,121 @@ class Database:
         inicio = (pagina - 1) * por_pagina
         return todos[inicio:inicio + por_pagina], total
 
+    def pesquisar_avancado(
+        self,
+        tipo: str,
+        nome: str = None, pai: str = None, mae: str = None,
+        avo_paterno: str = None, avo_paterna: str = None,
+        avo_materno: str = None, avo_materna: str = None,
+        noivo: str = None, noiva: str = None,
+        pai_noivo: str = None, mae_noivo: str = None,
+        pai_noiva: str = None, mae_noiva: str = None,
+        testemunha: str = None,
+        ano_min: int = None, ano_max: int = None,
+        fonte: str = None,
+    ) -> list:
+        """
+        Pesquisa com condições independentes por campo.
+        Cada parâmetro gera um AND separado — não há mistura entre campos.
+        Para casamentos, pai/mae pesquisam em pai_noivo/mae_noivo E pai_noiva/mae_noiva.
+        """
+        conn = self._conn()
+        cur  = conn.cursor()
+
+        if tipo == "batismo":
+            select = """
+                SELECT id, 'batismo' as tipo, fonte, ano, nome,
+                       data_nasc as data, local_nascimento as local,
+                       pai, mae, notas, nome as _nome_sort
+                FROM batismos
+            """
+            where, params = [], []
+            if nome:        where.append("NORMALIZAR(nome) LIKE ?");        params.append(f"%{_normalizar(nome)}%")
+            if pai:         where.append("NORMALIZAR(pai) LIKE ?");         params.append(f"%{_normalizar(pai)}%")
+            if mae:         where.append("NORMALIZAR(mae) LIKE ?");         params.append(f"%{_normalizar(mae)}%")
+            if avo_paterno: where.append("NORMALIZAR(avo_paterno) LIKE ?"); params.append(f"%{_normalizar(avo_paterno)}%")
+            if avo_paterna: where.append("NORMALIZAR(avo_paterna) LIKE ?"); params.append(f"%{_normalizar(avo_paterna)}%")
+            if avo_materno: where.append("NORMALIZAR(avo_materno) LIKE ?"); params.append(f"%{_normalizar(avo_materno)}%")
+            if avo_materna: where.append("NORMALIZAR(avo_materna) LIKE ?"); params.append(f"%{_normalizar(avo_materna)}%")
+
+        elif tipo == "casamento":
+            select = """
+                SELECT id, 'casamento' as tipo, fonte, ano,
+                       (noivo || ' & ' || noiva) as nome,
+                       data, residencia as local,
+                       pai_noivo, mae_noivo,
+                       pai_noiva, mae_noiva,
+                       notas,
+                       noivo as _nome_sort
+                FROM casamentos
+            """
+            where, params = [], []
+            if noivo:     where.append("NORMALIZAR(noivo) LIKE ?");     params.append(f"%{_normalizar(noivo)}%")
+            if noiva:     where.append("NORMALIZAR(noiva) LIKE ?");     params.append(f"%{_normalizar(noiva)}%")
+            if testemunha:
+                where.append("(NORMALIZAR(testemunha1) LIKE ? OR NORMALIZAR(testemunha2) LIKE ?)")
+                t = f"%{_normalizar(testemunha)}%"
+                params.extend([t, t])
+            # pai/mae ambíguos — pesquisar nos pais de ambos os nubentes
+            if pai:
+                where.append("(NORMALIZAR(pai_noivo) LIKE ? OR NORMALIZAR(pai_noiva) LIKE ?)")
+                p = f"%{_normalizar(pai)}%"
+                params.extend([p, p])
+            if mae:
+                where.append("(NORMALIZAR(mae_noivo) LIKE ? OR NORMALIZAR(mae_noiva) LIKE ?)")
+                m = f"%{_normalizar(mae)}%"
+                params.extend([m, m])
+            # campos directos dos pais dos nubentes
+            if pai_noivo: where.append("NORMALIZAR(pai_noivo) LIKE ?"); params.append(f"%{_normalizar(pai_noivo)}%")
+            if mae_noivo: where.append("NORMALIZAR(mae_noivo) LIKE ?"); params.append(f"%{_normalizar(mae_noivo)}%")
+            if pai_noiva: where.append("NORMALIZAR(pai_noiva) LIKE ?"); params.append(f"%{_normalizar(pai_noiva)}%")
+            if mae_noiva: where.append("NORMALIZAR(mae_noiva) LIKE ?"); params.append(f"%{_normalizar(mae_noiva)}%")
+            # avós dos nubentes (pesquisa em ambos os lados)
+            if avo_paterno:
+                where.append("(NORMALIZAR(avo_paterno_noivo) LIKE ? OR NORMALIZAR(avo_paterno_noiva) LIKE ?)")
+                a = f"%{_normalizar(avo_paterno)}%"; params.extend([a, a])
+            if avo_paterna:
+                where.append("(NORMALIZAR(avo_paterna_noivo) LIKE ? OR NORMALIZAR(avo_paterna_noiva) LIKE ?)")
+                a = f"%{_normalizar(avo_paterna)}%"; params.extend([a, a])
+            if avo_materno:
+                where.append("(NORMALIZAR(avo_materno_noivo) LIKE ? OR NORMALIZAR(avo_materno_noiva) LIKE ?)")
+                a = f"%{_normalizar(avo_materno)}%"; params.extend([a, a])
+            if avo_materna:
+                where.append("(NORMALIZAR(avo_materna_noivo) LIKE ? OR NORMALIZAR(avo_materna_noiva) LIKE ?)")
+                a = f"%{_normalizar(avo_materna)}%"; params.extend([a, a])
+            # nome genérico em casamento pesquisa noivo E noiva
+            if nome:
+                where.append("(NORMALIZAR(noivo) LIKE ? OR NORMALIZAR(noiva) LIKE ?)")
+                n = f"%{_normalizar(nome)}%"; params.extend([n, n])
+
+        else:  # obito
+            select = """
+                SELECT id, 'obito' as tipo, fonte, ano, nome,
+                       data_obito as data, local_falecimento as local,
+                       pai, mae, notas, nome as _nome_sort
+                FROM obitos
+            """
+            where, params = [], []
+            if nome: where.append("NORMALIZAR(nome) LIKE ?"); params.append(f"%{_normalizar(nome)}%")
+            if pai:  where.append("NORMALIZAR(pai) LIKE ?");  params.append(f"%{_normalizar(pai)}%")
+            if mae:  where.append("NORMALIZAR(mae) LIKE ?");  params.append(f"%{_normalizar(mae)}%")
+
+        # Filtros comuns aos 3 tipos
+        if ano_min: where.append("ano >= ?"); params.append(ano_min)
+        if ano_max: where.append("ano <= ?"); params.append(ano_max)
+        if fonte:   where.append("fonte LIKE ?"); params.append(f"%{fonte}%")
+
+        # Sem nenhuma condição → não devolver nada (evita dump completo da tabela)
+        if not where:
+            conn.close()
+            return []
+
+        sql = select + " WHERE " + " AND ".join(where)
+        cur.execute(sql, params)
+        rows = [dict(r) for r in cur.fetchall()]
+        conn.close()
+        return rows
+		
     def _pesquisar_tabela(self, tipo: str, q, ano_min, ano_max, fonte) -> List[dict]:
         conn = self._conn()
         cur = conn.cursor()
@@ -269,7 +384,10 @@ class Database:
             select = """
                 SELECT id, 'casamento' as tipo, fonte, ano,
                        (noivo || ' & ' || noiva) as nome,
-                       data, residencia as local, pai_noivo as pai, mae_noivo as mae, notas,
+                       data, residencia as local,
+                       pai_noivo, mae_noivo,
+                       pai_noiva, mae_noiva,
+                       notas,
                        noivo as _nome_sort
                 FROM casamentos
             """

@@ -95,6 +95,99 @@ def pesquisar(
         "resultados": resultados,
     }
 
+@app.get("/api/pesquisar-avancado")
+def pesquisar_avancado(
+    request: Request,
+    # Campos comuns
+    nome:         Optional[str] = Query(None, max_length=100),
+    pai:          Optional[str] = Query(None, max_length=100),
+    mae:          Optional[str] = Query(None, max_length=100),
+    avo_paterno:  Optional[str] = Query(None, max_length=100),
+    avo_paterna:  Optional[str] = Query(None, max_length=100),
+    avo_materno:  Optional[str] = Query(None, max_length=100),
+    avo_materna:  Optional[str] = Query(None, max_length=100),
+    # Campos de casamento
+    noivo:        Optional[str] = Query(None, max_length=100),
+    noiva:        Optional[str] = Query(None, max_length=100),
+    pai_noivo:    Optional[str] = Query(None, max_length=100),
+    mae_noivo:    Optional[str] = Query(None, max_length=100),
+    pai_noiva:    Optional[str] = Query(None, max_length=100),
+    mae_noiva:    Optional[str] = Query(None, max_length=100),
+    testemunha:   Optional[str] = Query(None, max_length=100),
+    # Filtros globais
+    ano_min:      Optional[int] = None,
+    ano_max:      Optional[int] = None,
+    fonte:        Optional[str] = Query(None, max_length=100),
+    pagina:       int = Query(1, ge=1, le=10000),
+    por_pagina:   int = Query(25, ge=1, le=5000),
+):
+    verificar_rate_limit(request, "pesquisa")
+
+    # Sanitizar todos os campos
+    def s(v): return sanitizar_input(v, "campo") if v else None
+    nome        = s(nome)
+    pai         = s(pai)
+    mae         = s(mae)
+    avo_paterno = s(avo_paterno)
+    avo_paterna = s(avo_paterna)
+    avo_materno = s(avo_materno)
+    avo_materna = s(avo_materna)
+    noivo       = s(noivo)
+    noiva       = s(noiva)
+    pai_noivo   = s(pai_noivo)
+    mae_noivo   = s(mae_noivo)
+    pai_noiva   = s(pai_noiva)
+    mae_noiva   = s(mae_noiva)
+    testemunha  = s(testemunha)
+    fonte       = s(fonte)
+    ano_min     = validar_ano(ano_min, "ano_min")
+    ano_max     = validar_ano(ano_max, "ano_max")
+
+    # ── Inferir tipo(s) a pesquisar ──────────────────────────────────────────
+    # Campos exclusivos de casamento presentes → só casamentos
+    campos_casamento = any([noivo, noiva, pai_noivo, mae_noivo, pai_noiva, mae_noiva, testemunha])
+    # Campos de identificação de pessoa (batismo/óbito) presentes
+    campos_pessoa = any([nome, avo_paterno, avo_paterna, avo_materno, avo_materna])
+    # Pai/mãe são ambíguos — usados nos 3 tipos
+    campos_ambiguos = any([pai, mae])
+
+    if campos_casamento and not campos_pessoa:
+        tipos = ["casamento"]
+    elif campos_pessoa and not campos_casamento:
+        tipos = ["batismo", "obito"]
+    else:
+        # Ambíguos sozinhos, ou mistura → pesquisa nos 3
+        tipos = ["batismo", "casamento", "obito"]
+
+    todos = []
+    for tipo in tipos:
+        rows = db.pesquisar_avancado(
+            tipo=tipo,
+            nome=nome, pai=pai, mae=mae,
+            avo_paterno=avo_paterno, avo_paterna=avo_paterna,
+            avo_materno=avo_materno, avo_materna=avo_materna,
+            noivo=noivo, noiva=noiva,
+            pai_noivo=pai_noivo, mae_noivo=mae_noivo,
+            pai_noiva=pai_noiva, mae_noiva=mae_noiva,
+            testemunha=testemunha,
+            ano_min=ano_min, ano_max=ano_max, fonte=fonte,
+        )
+        todos.extend(rows)
+
+    # Ordenar por ano
+    todos.sort(key=lambda r: (r.get("ano") or 0))
+
+    total  = len(todos)
+    inicio = (pagina - 1) * por_pagina
+    return {
+        "total":      total,
+        "pagina":     pagina,
+        "por_pagina": por_pagina,
+        "paginas":    (total + por_pagina - 1) // por_pagina,
+        "resultados": todos[inicio:inicio + por_pagina],
+        "tipos_pesquisados": tipos,
+    }
+    
 @app.get("/api/registo/{tipo}/{id}")
 def detalhe_registo(request: Request, tipo: str, id: int):
     verificar_rate_limit(request, "pesquisa")

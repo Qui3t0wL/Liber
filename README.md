@@ -28,6 +28,7 @@ Liber/
 │       └── style.css    # Estilos do frontend público
 ├── data/                # Criada automaticamente (base de dados)
 ├── docker-compose.yml
+├── CHANGELOG.md
 └── README.md
 ```
 
@@ -172,7 +173,7 @@ A interface pública permite pesquisar por texto livre. A pesquisa é:
 - Insensível a maiúsculas e minúsculas
 - Insensível a acentos (ex: "Jose" encontra "José")
 - Multi-termo com três níveis de relevância:
-  1. Frase exata ("José Alves" encontra "José Alves Bento")
+  1. Frase exacta ("José Alves" encontra "José Alves Bento")
   2. Tokens pela ordem com palavras no meio ("José Alves" encontra "José Maria Alves")
   3. Todos os tokens presentes em qualquer ordem
 
@@ -181,8 +182,37 @@ Campos pesquisados por tipo:
 - **Casamentos:** noivo, noiva, pai/mãe do noivo, pai/mãe da noiva, testemunhas, notas
 - **Óbitos:** nome, pai, mãe, notas
 
+### Pesquisa avançada (campo a campo)
+O botão **+ Avançada** expande um formulário com campos independentes, organizados em três secções:
+
+**Identificação**
+- Nome (batismos e óbitos)
+
+**Filiação — Batismo / Óbito**
+- Pai, Mãe
+- Avô paterno, Avó paterna, Avô materno, Avó materna
+
+**Casamento — Nubentes**
+- Noivo, Noiva, Testemunha
+
+**Casamento — Filiação dos nubentes**
+- Pai do noivo, Mãe do noivo, Pai da noiva, Mãe da noiva
+
+Cada campo preenchido gera uma condição SQL independente (`AND`) — não há mistura entre campos. O tipo de registo a pesquisar é inferido automaticamente com base nos campos preenchidos:
+
+| Campos preenchidos | Tipo inferido |
+|---|---|
+| Noivo, Noiva, Testemunha, Pai/Mãe do noivo/noiva | Casamentos |
+| Nome, Avós | Batismos e Óbitos |
+| Apenas Pai e/ou Mãe | Todos os tipos |
+| Mistura de campos de pessoa e casamento | Todos os tipos |
+
+O tipo inferido é indicado em tempo real por um chip azul no topo do painel (`🔍 Casamentos`, `🔍 Batismos e Óbitos`, `🔍 Todos os tipos`). O filtro manual de Tipo sobrepõe-se à inferência automática quando seleccionado.
+
+Enquanto a pesquisa avançada está activa, o campo de texto geral fica desactivado — os dois modos são mutuamente exclusivos. O botão **Pesquisa IA** continua disponível e usa os termos dos campos avançados como input.
+
 ### Pesquisa IA (linguagem natural)
-O botão **Pesquisa IA** envia a query para o Claude Haiku, que extrai campos
+O botão **✦ Pesquisa IA** envia a query para o Claude Haiku, que extrai campos
 estruturados e os traduz em filtros de pesquisa. Exemplos:
 
 | Query | Interpretação |
@@ -193,26 +223,24 @@ estruturados e os traduz em filtros de pesquisa. Exemplos:
 | `neto paterno de António Faria` | `avo_paterno=António Faria` |
 | `óbitos no século XIX` | `tipo=obito, ano_min=1800, ano_max=1899` |
 
-O botão é ocultado automaticamente se o endpoint não estiver acessível (fora da rede local
-ou sem chave API configurada). Nesse caso, um _parser_ por padrões regex é utilizado como
-_fallback_ no servidor.
+O botão é ocultado automaticamente se o endpoint não estiver acessível (fora da rede local ou sem chave API configurada). Nesse caso, um _parser_ por padrões regex é utilizado como _fallback_ no servidor.
 
-### Filtros manuais
-Combinam com qualquer pesquisa:
-- **Tipo:** Batismos / Casamentos / Óbitos
+### Filtros globais
+Combinam com qualquer modo de pesquisa (simples, avançada ou IA):
+- **Tipo:** Automático (inferido) / Batismos / Casamentos / Óbitos
 - **Período:** ano mínimo e máximo
 - **Fonte:** referência do arquivo (ex: `PT-ADSTR-PRQ-PABT06`)
 
-### Facetas dinâmicas
-Após uma pesquisa com mais de um resultado, surge um painel lateral (desktop)
-ou _drawer_ (mobile) com filtros adicionais sobre os resultados já obtidos:
+### Facetas dinâmicas em cascata
+Após uma pesquisa com mais de um resultado, surge um painel lateral (desktop) ou _drawer_ (mobile) com filtros adicionais sobre os resultados já obtidos:
 - Tipo de registo
 - Localidade
-- Pai / Mãe
+- Pai & Mãe — ou **Pais & Mães** quando os resultados incluem casamentos (agrega pai/mãe do noivo e pai/mãe da noiva numa faceta unificada)
 - Período (slider de anos)
 
-A paginação é feita do lado do cliente sobre o conjunto completo de resultados
-(até 5000 por pesquisa), com 25 registos por página.
+As facetas funcionam em **cascata**: ao seleccionar um valor numa faceta, os valores disponíveis nas restantes actualizam-se automaticamente para mostrar apenas o que coexiste com a selecção activa — o mesmo comportamento do AutoFiltro do Excel. Os grupos com selecções activas ficam assinalados com um badge laranja.
+
+A paginação é feita do lado do cliente sobre o conjunto completo de resultados (até 5000 por pesquisa), com 25 registos por página.
 
 ---
 
