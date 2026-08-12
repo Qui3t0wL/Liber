@@ -28,6 +28,7 @@ Liber/
 │       └── style.css    # Estilos do frontend público
 ├── data/                # Criada automaticamente (base de dados)
 ├── docker-compose.yml
+├── CHANGELOG.md
 └── README.md
 ```
 
