@@ -6,6 +6,10 @@ O formato segue [Keep a Changelog](https://keepachangelog.com/pt-PT/1.0.0/),
 e o versionamento segue [Semantic Versioning](https://semver.org/lang/pt-BR/).
 
 ---
+## [1.2.0] — 2026-08-XX
+
+### Corrigido
+- Visibilidade, em modo escuro, dos botões de navegação do topo (Pesquisa e Estatísticas) aquando da ação _hover_
 
 ## [1.1.0] — 2026-08-12
 
