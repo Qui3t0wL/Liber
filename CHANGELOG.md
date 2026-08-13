@@ -11,6 +11,9 @@ e o versionamento segue [Semantic Versioning](https://semver.org/lang/pt-BR/).
 ### Corrigido
 - Visibilidade, em modo escuro, dos botões de navegação do topo (Pesquisa e Estatísticas) aquando da ação _hover_
 
+### Adicionado
+- definição da timezone no ficheiro `docker-compose.yml`
+
 ## [1.1.0] — 2026-08-12
 
 ### Adicionado
@@ -64,5 +67,6 @@ e o versionamento segue [Semantic Versioning](https://semver.org/lang/pt-BR/).
 
 ---
 
+[1.2.0]: https://github.com/Qui3t0wL/Liber/compare/v1.1.0...v1.2.0
 [1.1.0]: https://github.com/Qui3t0wL/Liber/compare/v1.0.0...v1.1.0
 [1.0.0]: https://github.com/Qui3t0wL/Liber/releases/tag/v1.0.0
