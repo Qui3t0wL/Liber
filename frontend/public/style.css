@@ -43,6 +43,8 @@ html.dark header                { color: #dde0eb; }
 html.dark .stat-valor           { color: #dde0eb; }
 html.dark .btn-pesquisar        { background: #364a62; color: #dde0eb; }
 html.dark .btn-pesquisar:hover  { background: #435a78; }
+html.dark .btn-nav:hover        { background: rgba(255,255,255,0.12); color: #dde0eb; }
+html.dark .btn-nav.ativo        { background: var(--laranja); color: #ffffff; }
 html.dark .btn-ajuda            { background: #252938; border-color: #363a52; color: #8b92a8; }
 html.dark .btn-ajuda:hover      { border-color: #6a9ab8; color: #6a9ab8; }
 html.dark .badge-batismo        { background: #1a2d3d; color: #7ab0d8; }
