@@ -10,4 +10,6 @@ services:
     volumes:
       - ./data:/data
       - ./frontend:/app/frontend:ro
+      - /etc/timezone:/etc/timezone:ro
+      - /etc/localtime:/etc/localtime:ro
     env_file: .env
